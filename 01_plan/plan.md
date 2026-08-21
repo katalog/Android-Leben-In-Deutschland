@@ -81,12 +81,16 @@
 
 ## 개발 단계 (Phase)
 
-### Phase 0 — 프로젝트 셋업
-- [ ] Android Studio 프로젝트 생성 (Compose 템플릿, 패키지명 결정)
-- [ ] `compose_starter/`의 `Color.kt`, `Type.kt`, `Theme.kt`를 `ui/theme/`로 복사, 패키지명 수정
-- [ ] Google Fonts (Archivo, Noto Sans KR, Noto Sans Arabic) 연동 + `font_certs.xml` 추가
-- [ ] build.gradle.kts에 Compose Material3, Room, Navigation-Compose, ML Kit Translate, WorkManager 의존성 추가
-- [ ] `LidTheme { AppNavHost() }` 뼈대 구성
+### Phase 0 — 프로젝트 셋업 ✅ 완료 (2026-08-21)
+- [x] Gradle 프로젝트 생성 (패키지명 `com.katalog.lebenindeutschland`, 모듈 `app`)
+- [x] `compose_starter/`의 `Color.kt`, `Type.kt`, `Theme.kt`를 `ui/theme/`로 복사, 패키지명 수정
+- [x] Google Fonts (Archivo, Noto Sans KR, Noto Sans Arabic) 연동 + `font_certs.xml` 추가
+- [x] build.gradle.kts에 Compose Material3, Room(런타임만, 컴파일러는 Phase 1), Navigation-Compose, ML Kit Translate, WorkManager 의존성 추가
+- [x] `LidTheme { AppNavHost() }` 뼈대 구성, placeholder 화면으로 `assembleDebug` 빌드 성공 확인
+- 버전: AGP 9.3.1(빌트인 Kotlin, `org.jetbrains.kotlin.android` 플러그인 미적용) · Gradle 9.5.0 · Kotlin/Compose 컴파일러 2.3.21 · compileSdk/targetSdk 37 · minSdk 26
+- 알아둘 것: AGP 9.x부터 Kotlin이 내장되어 `kotlin-android` 플러그인을 따로 적용하면 `Cannot add extension with name 'kotlin'` 에러 발생 — `com.android.application` + `org.jetbrains.kotlin.plugin.compose`만 적용
+- 알아둘 것: `androidx.compose.ui:ui-text-google-fonts` 1.11.0부터 `GoogleFontProvider` → `GoogleFont.Provider`(중첩 클래스)로 이름 변경됨
+- Room `ksp(libs.room.compiler)`는 Phase 1에서 실제 Entity/DAO 작성 시 KSP 플러그인과 함께 추가 예정 (Kotlin 버전과 KSP 버전 매칭 필요)
 
 ### Phase 1 — 문제 데이터 확보 & 데이터 계층
 - [ ] BAMF 공식 Fragenkatalog 웹 조사, 일반 300 + 연방주 16×10 문제를 JSON으로 구조화
@@ -133,18 +137,24 @@
 ## 진행 로그
 > 최신 항목이 위로 오도록 기록.
 
-### 2026-08-21
+### 2026-08-21 (Phase 0 완료)
+- Android 프로젝트 뼈대 생성 완료, `./gradlew assembleDebug` 빌드 성공 (디버그 APK 출력 확인)
+- 패키지명 `com.katalog.lebenindeutschland`, Compose 테마(`LidTheme`)와 `AppNavHost` 뼈대 구성
+- 버전 조합: AGP 9.3.1(빌트인 Kotlin) · Gradle 9.5.0 · Kotlin/Compose 컴파일러 2.3.21 · compileSdk/targetSdk 37 · minSdk 26
+- Room/Navigation/WorkManager/ML Kit Translate 의존성 선언 완료 (Room의 KSP 컴파일러 연결은 Phase 1으로 미룸)
+- `local.properties`(SDK 경로)는 gitignore로 제외, 커밋에는 포함 안 됨
+
+### 2026-08-21 (설계)
 - 핵심 기능 5가지 확정: 정확한 문제 데이터(일반+주별), 모의고사, 오답 재연습, 통계, 온디바이스 AI 번역
 - 번역 엔진 결정: **ML Kit Translation** (무료 확인 완료, 필요 언어 전부 지원) — 앱 내장 커스텀 모델 대신 채택
 - 번역 캐싱 전략 확정: 언어팩 다운로드 후 전체 콘텐츠 백그라운드 사전 번역 → Room 캐시, 이후 완전 오프라인
 - 데이터 소스 결정: BAMF 공식 카탈로그 웹 조사로 진행
 - Phase를 0~8로 재구성 (데이터 확보 → 화면 → 시험엔진 → 오답연습 → 통계 → 번역 → 다듬기 → 출시)
-- 아직 코드 작업 시작 전.
 
 ### (이전) 2026-08-21
 - 저장소 생성, README/.gitignore(Android) 세팅, 디자인 zip 압축 해제, 최초 plan.md 작성
 
 ## 다음 할 일 (Next Up)
 1. BAMF 공식 Fragenkatalog 웹 조사 → 문제 데이터 JSON 구조화 (Phase 1 착수)
-2. Android Studio 프로젝트 생성 및 패키지명 결정 (Phase 0)
-3. 33문제 = 30+3 비율, 이미지 포함 문제 존재 여부 등 조사 단계에서 재확인
+2. 33문제 = 30+3 비율, 이미지 포함 문제 존재 여부 등 조사 단계에서 재확인
+3. Room 스키마 설계 후 KSP 플러그인 추가 (Kotlin 2.3.21과 매칭되는 버전 확인 필요)
