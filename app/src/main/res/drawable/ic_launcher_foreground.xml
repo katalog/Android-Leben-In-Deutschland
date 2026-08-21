@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Placeholder mark: "D" for Deutschland. Replace with final icon in Phase 8. -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M38,34 h16 c11,0 20,9 20,20 c0,11 -9,20 -20,20 h-16 z M48,44 v20 h6 c6,0 10,-4.5 10,-10 c0,-5.5 -4,-10 -10,-10 z" />
+</vector>
