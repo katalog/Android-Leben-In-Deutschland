@@ -20,4 +20,16 @@ interface AttemptAnswerDao {
      */
     @Query("SELECT * FROM attempt_answers ORDER BY answeredAt")
     suspend fun allOrderedByTime(): List<AttemptAnswer>
+
+    @Query(
+        """
+        SELECT COUNT(DISTINCT aa.questionId) FROM attempt_answers aa
+        INNER JOIN questions q ON q.id = aa.questionId
+        WHERE q.topicId = :topicId AND aa.isCorrect = 1
+        """
+    )
+    suspend fun correctDistinctCountByTopic(topicId: String): Int
+
+    @Query("SELECT COUNT(DISTINCT questionId) FROM attempt_answers WHERE isCorrect = 1")
+    suspend fun correctDistinctQuestionCount(): Int
 }

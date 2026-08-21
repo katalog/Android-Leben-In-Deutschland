@@ -2,14 +2,19 @@ package com.moonkata.lebenindeutschland.ui.theme
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 
 private val LidColors = lightColorScheme(
@@ -44,6 +49,19 @@ fun LidTheme(content: @Composable () -> Unit) =
 @Composable
 fun Rule(modifier: Modifier = Modifier) =
     Box(modifier.fillMaxWidth().height(2.dp).background(Divider))
+
+/**
+ * Material3's [Button] hardcodes a fully-rounded shape in [ButtonDefaults] regardless of the
+ * theme's [Shapes] — use this instead everywhere so "radius 0 everywhere" actually holds.
+ */
+@Composable
+fun LidButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    colors: ButtonColors = ButtonDefaults.buttonColors(),
+    content: @Composable RowScope.() -> Unit,
+) = Button(onClick = onClick, modifier = modifier, enabled = enabled, shape = RectangleShape, colors = colors, content = content)
 
 object LidSpace {
     val x1 = 4.dp

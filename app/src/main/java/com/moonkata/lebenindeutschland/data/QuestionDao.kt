@@ -19,12 +19,15 @@ interface QuestionDao {
     @Query("SELECT * FROM questions WHERE id IN (:ids)")
     suspend fun getByIds(ids: List<Int>): List<Question>
 
-    @Query("SELECT * FROM questions WHERE topicId = :topicId ORDER BY id")
-    suspend fun getByTopic(topicId: String): List<Question>
+    @Query("SELECT * FROM questions WHERE topicId = :topicId ORDER BY RANDOM() LIMIT :limit")
+    suspend fun randomByTopic(topicId: String, limit: Int): List<Question>
 
     @Query("SELECT * FROM questions WHERE category = 'GENERAL' ORDER BY RANDOM() LIMIT :limit")
     suspend fun randomGeneral(limit: Int): List<Question>
 
     @Query("SELECT * FROM questions WHERE category = 'BUNDESLAND' AND bundesland = :code ORDER BY RANDOM() LIMIT :limit")
     suspend fun randomBundesland(code: String, limit: Int): List<Question>
+
+    @Query("SELECT COUNT(*) FROM questions WHERE topicId = :topicId")
+    suspend fun countByTopic(topicId: String): Int
 }

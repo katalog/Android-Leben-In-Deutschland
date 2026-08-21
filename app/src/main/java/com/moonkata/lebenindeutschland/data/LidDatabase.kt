@@ -4,10 +4,8 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.sqlite.db.SupportSQLiteDatabase
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 @Database(
     entities = [Question::class, Attempt::class, AttemptAnswer::class, TranslationCacheEntry::class],
@@ -21,25 +19,28 @@ abstract class LidDatabase : RoomDatabase() {
 
     companion object {
         @Volatile private var instance: LidDatabase? = null
+        private val seedMutex = Mutex()
 
         fun get(context: Context): LidDatabase =
             instance ?: synchronized(this) {
-                instance ?: build(context).also { instance = it }
+                instance ?: Room.databaseBuilder(context.applicationContext, LidDatabase::class.java, "lid.db")
+                    .build()
+                    .also { instance = it }
             }
 
-        private fun build(context: Context): LidDatabase {
-            val appContext = context.applicationContext
-            return Room.databaseBuilder(appContext, LidDatabase::class.java, "lid.db")
-                .addCallback(object : Callback() {
-                    override fun onCreate(db: SupportSQLiteDatabase) {
-                        super.onCreate(db)
-                        // Prepopulate the static question catalogue on first launch only.
-                        CoroutineScope(Dispatchers.IO).launch {
-                            get(appContext).questionDao().insertAll(QuestionAssetLoader.loadAll(appContext))
-                        }
-                    }
-                })
-                .build()
+        /**
+         * Suspends until the question catalogue is in the DB. Callers must await this before
+         * running any question query — a Room onCreate Callback would populate asynchronously
+         * with no way for the first screen's queries to wait for it, which raced and briefly
+         * showed 0 questions.
+         */
+        suspend fun ensureSeeded(context: Context) {
+            val db = get(context)
+            if (db.questionDao().count() > 0) return
+            seedMutex.withLock {
+                if (db.questionDao().count() > 0) return
+                db.questionDao().insertAll(QuestionAssetLoader.loadAll(context.applicationContext))
+            }
         }
     }
 }

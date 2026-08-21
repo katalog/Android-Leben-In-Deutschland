@@ -96,7 +96,7 @@
 - [x] 일반 300 + 연방주 16×10 = 460문제를 JSON으로 구조화
 - [x] 이미지 포함 문제 처리 (에셋 번들, 38개 PNG)
 - [x] Room 스키마: `Question`, `Attempt`, `AttemptAnswer`, `TranslationCacheEntry` (`Topic`은 테이블 대신 정적 객체 `Topics`로 단순화 — 10개 일반 주제 + 16개 주가 고정/소규모라 DB 테이블이 과함)
-- [x] 최초 실행 시 데이터 prepopulate 로직 (`LidDatabase` Callback.onCreate → `QuestionAssetLoader`)
+- [x] 최초 실행 시 데이터 prepopulate 로직 (`LidDatabase.ensureSeeded()` → `QuestionAssetLoader`; 최초 Room `Callback.onCreate` 방식은 비동기라 화면의 첫 조회와 레이스가 나서 Phase 2 중 suspend 함수로 교체)
 - [x] 에뮬레이터(Pixel_6, API 36)에 실제 설치해 검증: "문제 460개 로드됨" 확인, 크래시 없음, 독일어 움라우트 정상 렌더링
 
 **데이터 출처:** 직접 BAMF PDF를 조사해 460문제를 처음부터 옮겨 적는 대신,
@@ -110,19 +110,27 @@
 - Room이 Kotlin enum(`QuestionCategory`, `AttemptMode`, `TranslationContentType`)을 TypeConverter 없이 TEXT 컬럼으로 네이티브 지원 확인 (Room 2.8.4)
 - KSP는 Kotlin 버전과 분리된 자체 버전 체계로 전환됨(`2.3.11`) — AGP 빌트인 Kotlin(2.3.21)과 무관하게 붙여도 정상 동작
 
-### Phase 2 — 핵심 화면 구현 (기존 4화면)
-- [ ] `FrageScreen.kt` — 가장 먼저 (전체 상태 로직을 담고 있음)
-- [ ] `SpracheScreen.kt`, `StartScreen.kt`, `ErgebnisScreen.kt`
-- [ ] Navigation 연결
+### Phase 2 — 핵심 화면 구현 ✅ 완료 (2026-08-21)
+- [x] `FrageScreen.kt` + `AnswerRow.kt` + `QuizViewModel.kt` — 정답/오답 상태, 이미지 문제, 진행바, 헤더 전부 스펙대로 구현·실기기 검증
+- [x] `SpracheScreen.kt` (언어 9개, 선택 후 Weiter) · `StartScreen.kt` (진행률, 주제 목록, 시험 포스터, Bundesland 블록) · `ErgebnisScreen.kt` (점수 포스터, 주제별 막대, 오답 연습 버튼)
+- [x] Navigation 연결 (Sprache → Start → Frage → Ergebnis, 실제 `NavHost`로 교체, 이전 임시 하네스 제거)
+- [x] `UserPrefs`(SharedPreferences)로 언어/Bundesland 저장
+- [x] 에뮬레이터에서 전체 플로우 실측 검증: 언어선택→홈→주제연습(10문제)→결과화면→오답연습→홈 복귀 시 진행률(GELERNT, 주제별) 반영까지 확인
 
-### Phase 3 — 모의고사 엔진
-- [ ] 33문제(30+3) 랜덤 추출 로직
-- [ ] 60분 카운트다운 타이머 (프로세스 종료 대응)
-- [ ] 채점 및 `Attempt`/`AttemptAnswer` 저장
+**진행 중 발견/수정한 버그:**
+- Material3 `Button`이 테마의 `shapes`를 무시하고 항상 완전 둥근 pill 모양을 강제함 → `LidButton`(`ui/theme/Theme.kt`)으로 `shape = RectangleShape` 고정해서 전역 사용
+- `AnswerRow`의 리딩 accent bar에 `fillMaxHeight()`만 쓰면 부모(Column)의 느슨한 제약 때문에 첫 번째 행이 화면 전체 높이를 먹어버리고 나머지 보기가 화면 밖으로 밀려남 → `Modifier.height(IntrinsicSize.Min)`으로 고정
+- `enableEdgeToEdge()` 사용 시 `safeDrawingPadding()`을 안 주면 헤더가 상태바에 가려짐
+- Room `Callback.onCreate`의 비동기 prepopulate와 화면의 첫 조회 사이에 레이스 컨디션 발생(설치 직후 "0/0" 표시) → `ensureSeeded()` suspend 함수 + Mutex로 교체, 실제 콘텐츠 렌더링 전 확실히 대기하도록 변경
 
-### Phase 4 — 오답 재연습
-- [ ] 오답 큐 조회 로직 (최신 시도 기준 오답)
-- [ ] REVIEW 모드로 FrageScreen 연결
+### Phase 3 — 모의고사 엔진 (거의 완료, 타이머만 남음)
+- [x] 33문제(30+3) 랜덤 추출 로직 (`QuestionRepository.examQuestions`) — Home의 "Prüfung simulieren" 포스터에 연결됨
+- [ ] 60분 카운트다운 타이머 (프로세스 종료 대응) — 남은 작업
+- [x] 채점 및 `Attempt`/`AttemptAnswer` 저장, 17개 기준 합격/불합격 판정(`QuizViewModel.passed`)까지 구현·검증됨 (Ergebnis에 BESTANDEN/NICHT BESTANDEN 표시 준비됨, 시험 모드로 실행하면 바로 동작)
+
+### Phase 4 — 오답 재연습 (세션 단위는 완료, 전역 큐는 남음)
+- [x] REVIEW 모드로 FrageScreen 연결 — Ergebnis 화면의 "N falsche Fragen üben"에서 방금 틀린 문제로 재연습 가능, 실기기 검증 완료
+- [ ] 홈에서 바로 진입 가능한 **전역** 오답 큐(모든 시도 이력 통틀어 최신 답이 오답인 문제) — 지금은 세션(방금 끝난 회차)에 한정됨. `AttemptAnswerDao.allOrderedByTime()`은 이미 있으니 Kotlin에서 questionId별 최신 답만 남기는 reduce만 추가하면 됨
 
 ### Phase 5 — 통계 화면
 - [ ] 응시 이력 리스트 + 점수 추이 그래프
@@ -148,6 +156,14 @@
 
 ## 진행 로그
 > 최신 항목이 위로 오도록 기록.
+
+### 2026-08-21 (Phase 2 완료 + Phase 3/4 상당 부분)
+- 4개 화면(Sprache/Start/Frage/Ergebnis) 전부 구현, 실제 NavHost로 연결, 임시 테스트 하네스 제거
+- 주제 연습은 전체 문제(최대 70개)가 아니라 10문제로 세션을 제한하도록 수정 (Bundesland 연습과 동일한 세션 크기)
+- 33=30+3 시험 문제 구성, 17개 합격 판정까지 구현됨 — 남은 건 60분 타이머뿐이라 Phase 3 대부분 완료
+- 세션 단위 오답 재연습(Ergebnis → "N falsche Fragen üben")까지 구현됨 — Phase 4는 홈에서 진입하는 전역 오답 큐만 남음
+- 에뮬레이터에서 전체 사용자 플로우 실측: 언어선택 → 홈 → 주제연습 → 결과 → 오답연습 → 홈 복귀 시 진행률 반영까지 한 번에 확인
+- 버그 4개 발견·수정: Material3 Button이 테마 shape 무시(전역 `LidButton`으로 해결), `fillMaxHeight()`가 부모의 느슨한 제약 때문에 답변 행 하나가 화면을 다 먹는 레이아웃 버그, edge-to-edge 상태바 겹침, Room prepopulate 레이스 컨디션
 
 ### 2026-08-21 (Phase 1 완료)
 - BAMF 공식 데이터 기반 MIT 라이선스 오픈 데이터셋(flexsurfer/einburgerungstest)을 찾아 우리 스키마로 변환 — 460문제 + 이미지 38개
@@ -175,6 +191,7 @@
 - 저장소 생성, README/.gitignore(Android) 세팅, 디자인 zip 압축 해제, 최초 plan.md 작성
 
 ## 다음 할 일 (Next Up)
-1. Phase 2 착수: `FrageScreen`(문제 화면)부터 구현 — 전체 상태 로직을 담고 있어 가장 먼저 만들 것을 권장
-2. 이어서 `SpracheScreen`, `StartScreen`, `ErgebnisScreen` + Navigation 연결
-3. 지금 `AppNavHost`의 PlaceholderScreen(DB 검증용)은 Phase 2에서 실제 화면으로 교체 예정
+1. Phase 3 마무리: 60분 시험 타이머 (프로세스 종료/화면 회전에도 남은 시간 유지 — `startedAt` 기준 재계산 방식으로 구현 권장), 헤더의 exam 모드 trailing meta("44 MIN")에 연결
+2. Phase 4 마무리: 홈에서 진입 가능한 전역 오답 큐 화면 (전체 이력에서 최신 답이 오답인 문제 모음)
+3. Bundesland 선택 UI가 아직 없음(디자인 스펙에도 없던 화면) — Home의 Bundesland 블록과 시험의 3문제 구성을 실제로 쓰려면 간단한 선택 화면이나 설정 진입점이 필요
+4. Phase 5(통계 화면), Phase 6(ML Kit 번역)은 아직 시작 전
