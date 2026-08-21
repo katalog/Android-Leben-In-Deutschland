@@ -1,4 +1,4 @@
-package com.katalog.lebenindeutschland.ui.theme
+package com.moonkata.lebenindeutschland.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

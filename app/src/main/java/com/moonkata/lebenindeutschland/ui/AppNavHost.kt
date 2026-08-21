@@ -1,4 +1,4 @@
-package com.katalog.lebenindeutschland.ui
+package com.moonkata.lebenindeutschland.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.katalog.lebenindeutschland.ui.theme.LidType
+import com.moonkata.lebenindeutschland.ui.theme.LidType
 
 private object Routes {
     const val PLACEHOLDER = "placeholder"

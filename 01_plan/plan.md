@@ -82,7 +82,7 @@
 ## 개발 단계 (Phase)
 
 ### Phase 0 — 프로젝트 셋업 ✅ 완료 (2026-08-21)
-- [x] Gradle 프로젝트 생성 (패키지명 `com.katalog.lebenindeutschland`, 모듈 `app`)
+- [x] Gradle 프로젝트 생성 (패키지명 `com.moonkata.lebenindeutschland`, 모듈 `app`)
 - [x] `compose_starter/`의 `Color.kt`, `Type.kt`, `Theme.kt`를 `ui/theme/`로 복사, 패키지명 수정
 - [x] Google Fonts (Archivo, Noto Sans KR, Noto Sans Arabic) 연동 + `font_certs.xml` 추가
 - [x] build.gradle.kts에 Compose Material3, Room(런타임만, 컴파일러는 Phase 1), Navigation-Compose, ML Kit Translate, WorkManager 의존성 추가
@@ -139,7 +139,7 @@
 
 ### 2026-08-21 (Phase 0 완료)
 - Android 프로젝트 뼈대 생성 완료, `./gradlew assembleDebug` 빌드 성공 (디버그 APK 출력 확인)
-- 패키지명 `com.katalog.lebenindeutschland`, Compose 테마(`LidTheme`)와 `AppNavHost` 뼈대 구성
+- 패키지명 `com.moonkata.lebenindeutschland`, Compose 테마(`LidTheme`)와 `AppNavHost` 뼈대 구성
 - 버전 조합: AGP 9.3.1(빌트인 Kotlin) · Gradle 9.5.0 · Kotlin/Compose 컴파일러 2.3.21 · compileSdk/targetSdk 37 · minSdk 26
 - Room/Navigation/WorkManager/ML Kit Translate 의존성 선언 완료 (Room의 KSP 컴파일러 연결은 Phase 1으로 미룸)
 - `local.properties`(SDK 경로)는 gitignore로 제외, 커밋에는 포함 안 됨

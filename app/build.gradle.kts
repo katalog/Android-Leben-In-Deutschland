@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.katalog.lebenindeutschland"
+    namespace = "com.moonkata.lebenindeutschland"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.katalog.lebenindeutschland"
+        applicationId = "com.moonkata.lebenindeutschland"
         minSdk = 26
         targetSdk = 37
         versionCode = 1

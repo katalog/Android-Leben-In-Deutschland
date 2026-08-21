@@ -1,4 +1,4 @@
-package com.katalog.lebenindeutschland.ui.theme
+package com.moonkata.lebenindeutschland.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
@@ -8,7 +8,7 @@ import androidx.compose.ui.text.googlefonts.Font as GoogleFont
 import androidx.compose.ui.text.googlefonts.GoogleFont as GF
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import com.katalog.lebenindeutschland.R
+import com.moonkata.lebenindeutschland.R
 
 // Requires: implementation "androidx.compose.ui:ui-text-google-fonts" and res/values/font_certs.xml.
 private val provider = GF.Provider(
