@@ -92,11 +92,23 @@
 - 알아둘 것: `androidx.compose.ui:ui-text-google-fonts` 1.11.0부터 `GoogleFontProvider` → `GoogleFont.Provider`(중첩 클래스)로 이름 변경됨
 - Room `ksp(libs.room.compiler)`는 Phase 1에서 실제 Entity/DAO 작성 시 KSP 플러그인과 함께 추가 예정 (Kotlin 버전과 KSP 버전 매칭 필요)
 
-### Phase 1 — 문제 데이터 확보 & 데이터 계층
-- [ ] BAMF 공식 Fragenkatalog 웹 조사, 일반 300 + 연방주 16×10 문제를 JSON으로 구조화
-- [ ] 이미지 포함 문제 처리 방식 확정 (에셋 번들)
-- [ ] Room 스키마: `Question`, `Topic`, `Attempt`, `AttemptAnswer`, `TranslationCache`
-- [ ] 최초 실행 시 데이터 prepopulate 로직
+### Phase 1 — 문제 데이터 확보 & 데이터 계층 ✅ 완료 (2026-08-21)
+- [x] 일반 300 + 연방주 16×10 = 460문제를 JSON으로 구조화
+- [x] 이미지 포함 문제 처리 (에셋 번들, 38개 PNG)
+- [x] Room 스키마: `Question`, `Attempt`, `AttemptAnswer`, `TranslationCacheEntry` (`Topic`은 테이블 대신 정적 객체 `Topics`로 단순화 — 10개 일반 주제 + 16개 주가 고정/소규모라 DB 테이블이 과함)
+- [x] 최초 실행 시 데이터 prepopulate 로직 (`LidDatabase` Callback.onCreate → `QuestionAssetLoader`)
+- [x] 에뮬레이터(Pixel_6, API 36)에 실제 설치해 검증: "문제 460개 로드됨" 확인, 크래시 없음, 독일어 움라우트 정상 렌더링
+
+**데이터 출처:** 직접 BAMF PDF를 조사해 460문제를 처음부터 옮겨 적는 대신,
+[flexsurfer/einburgerungstest](https://github.com/flexsurfer/einburgerungstest) (MIT 라이선스) 저장소의
+`data.json`을 사용 — 이 저장소 자체가 "BAMF Gesamtfragenkatalog, Stand: 07.05.2025" 공식 데이터를 기반으로
+이미 구조화해둔 것이어서 훨씬 안전하고 정확함 (LLM이 검색 스니펫만 보고 460문제를 손으로 재구성하는 것보다
+훨씬 신뢰도 높음). 출처/라이선스 고지는 [`app/src/main/assets/questions/SOURCE.md`](../app/src/main/assets/questions/SOURCE.md) 참고.
+- 33문제 = 30(일반) + 3(연방주) 구성 웹 조사로 재확인 완료 (기존 가정 맞음)
+- `explanationDe`는 전부 `null` — 소스 데이터(공식 BAMF 카탈로그와 동일)에 문항별 해설이 없음. 필요하면 나중에 별도 작성해야 함
+- 이미지 문제(예: "어느 문장이 브란덴부르크 주의 문장입니까?")는 4개 보기 이미지가 한 장의 PNG에 합쳐진 형태 — 실제 시험 인쇄물과 동일한 방식, 별도 처리 불필요
+- Room이 Kotlin enum(`QuestionCategory`, `AttemptMode`, `TranslationContentType`)을 TypeConverter 없이 TEXT 컬럼으로 네이티브 지원 확인 (Room 2.8.4)
+- KSP는 Kotlin 버전과 분리된 자체 버전 체계로 전환됨(`2.3.11`) — AGP 빌트인 Kotlin(2.3.21)과 무관하게 붙여도 정상 동작
 
 ### Phase 2 — 핵심 화면 구현 (기존 4화면)
 - [ ] `FrageScreen.kt` — 가장 먼저 (전체 상태 로직을 담고 있음)
@@ -137,6 +149,14 @@
 ## 진행 로그
 > 최신 항목이 위로 오도록 기록.
 
+### 2026-08-21 (Phase 1 완료)
+- BAMF 공식 데이터 기반 MIT 라이선스 오픈 데이터셋(flexsurfer/einburgerungstest)을 찾아 우리 스키마로 변환 — 460문제 + 이미지 38개
+- Room 엔티티/DAO 4종 구현 (`Question`, `Attempt`, `AttemptAnswer`, `TranslationCacheEntry`), `Topic`은 정적 객체로 단순화
+- `LidDatabase`의 `Callback.onCreate`에서 최초 실행 시 assets JSON을 파싱해 자동 prepopulate
+- 패키지명을 `com.moonkata.lebenindeutschland`로 변경 (사용자 요청)
+- 에뮬레이터(Pixel_6) 실제 설치·실행으로 460문제 로드 및 크래시 없음 확인
+- Room 스키마 export 활성화 (`app/schemas/`)
+
 ### 2026-08-21 (Phase 0 완료)
 - Android 프로젝트 뼈대 생성 완료, `./gradlew assembleDebug` 빌드 성공 (디버그 APK 출력 확인)
 - 패키지명 `com.moonkata.lebenindeutschland`, Compose 테마(`LidTheme`)와 `AppNavHost` 뼈대 구성
@@ -155,6 +175,6 @@
 - 저장소 생성, README/.gitignore(Android) 세팅, 디자인 zip 압축 해제, 최초 plan.md 작성
 
 ## 다음 할 일 (Next Up)
-1. BAMF 공식 Fragenkatalog 웹 조사 → 문제 데이터 JSON 구조화 (Phase 1 착수)
-2. 33문제 = 30+3 비율, 이미지 포함 문제 존재 여부 등 조사 단계에서 재확인
-3. Room 스키마 설계 후 KSP 플러그인 추가 (Kotlin 2.3.21과 매칭되는 버전 확인 필요)
+1. Phase 2 착수: `FrageScreen`(문제 화면)부터 구현 — 전체 상태 로직을 담고 있어 가장 먼저 만들 것을 권장
+2. 이어서 `SpracheScreen`, `StartScreen`, `ErgebnisScreen` + Navigation 연결
+3. 지금 `AppNavHost`의 PlaceholderScreen(DB 검증용)은 Phase 2에서 실제 화면으로 교체 예정

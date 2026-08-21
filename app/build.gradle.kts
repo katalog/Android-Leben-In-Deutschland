@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -32,6 +33,10 @@ android {
     }
 }
 
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 dependencies {
     implementation(libs.core.ktx)
     implementation(libs.activity.compose)
@@ -44,9 +49,9 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.navigation.compose)
 
-    // Room compiler (KSP) is wired in Phase 1 once entities/DAOs exist.
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
 
     implementation(libs.work.runtime.ktx)
     implementation(libs.mlkit.translate)
