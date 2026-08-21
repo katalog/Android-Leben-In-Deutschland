@@ -3,6 +3,18 @@ package com.moonkata.lebenindeutschland.data
 class QuestionRepository(private val db: LidDatabase) {
     fun attemptHistory() = db.attemptDao().history()
 
+    suspend fun allQuestions(): List<Question> = db.questionDao().getAll()
+
+    suspend fun cachedTranslation(questionId: Int, contentType: TranslationContentType, languageCode: String): String? =
+        db.translationCacheDao().get(questionId, contentType, languageCode)?.translatedText
+
+    suspend fun cacheTranslations(entries: List<TranslationCacheEntry>) {
+        if (entries.isNotEmpty()) db.translationCacheDao().insertAll(entries)
+    }
+
+    suspend fun translationCoverage(languageCode: String): Int = db.translationCacheDao().countForLanguage(languageCode)
+
+    suspend fun clearTranslationCache(languageCode: String) = db.translationCacheDao().deleteForLanguage(languageCode)
 
     suspend fun randomGeneral(count: Int): List<Question> = db.questionDao().randomGeneral(count)
 

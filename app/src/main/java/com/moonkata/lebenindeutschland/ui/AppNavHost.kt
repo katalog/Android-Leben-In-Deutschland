@@ -26,6 +26,7 @@ import com.moonkata.lebenindeutschland.data.LidDatabase
 import com.moonkata.lebenindeutschland.data.Question
 import com.moonkata.lebenindeutschland.data.QuestionRepository
 import com.moonkata.lebenindeutschland.data.UserPrefs
+import com.moonkata.lebenindeutschland.data.translation.PreTranslateWorker
 import com.moonkata.lebenindeutschland.ui.home.BundeslandPickerScreen
 import com.moonkata.lebenindeutschland.ui.home.StartScreen
 import com.moonkata.lebenindeutschland.ui.language.SpracheScreen
@@ -99,6 +100,7 @@ fun AppNavHost() {
         composable(Routes.SPRACHE) {
             SpracheScreen(onLanguageChosen = { code ->
                 prefs.selectedLanguage = code
+                PreTranslateWorker.enqueue(context, code)
                 navController.navigate(Routes.START) { popUpTo(Routes.SPRACHE) { inclusive = true } }
             })
         }
@@ -136,6 +138,7 @@ fun AppNavHost() {
 
         composable(Routes.MEHR) {
             MehrScreen(
+                repository = repository,
                 onChangeLanguage = { navController.navigate(Routes.SPRACHE) },
                 onSelectTab = ::goToTab,
             )
@@ -150,6 +153,8 @@ fun AppNavHost() {
             val quizViewModel: QuizViewModel = viewModel(factory = factory)
             FrageScreen(
                 viewModel = quizViewModel,
+                repository = repository,
+                languageCode = prefs.selectedLanguage,
                 onExit = { navController.popBackStack() },
                 onFinished = { vm ->
                     finishedViewModel = vm

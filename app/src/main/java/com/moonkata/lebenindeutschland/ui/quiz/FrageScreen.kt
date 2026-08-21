@@ -12,22 +12,36 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.moonkata.lebenindeutschland.data.AttemptMode
+import com.moonkata.lebenindeutschland.data.QuestionRepository
+import com.moonkata.lebenindeutschland.data.TranslationCacheEntry
+import com.moonkata.lebenindeutschland.data.TranslationContentType
+import com.moonkata.lebenindeutschland.data.UserPrefs
+import com.moonkata.lebenindeutschland.data.translation.TranslationEngine
 import com.moonkata.lebenindeutschland.ui.theme.Accent
 import com.moonkata.lebenindeutschland.ui.theme.Accent700
 import com.moonkata.lebenindeutschland.ui.theme.LidButton
@@ -37,13 +51,50 @@ import com.moonkata.lebenindeutschland.ui.theme.Neutral300
 import com.moonkata.lebenindeutschland.ui.theme.Rule
 
 @Composable
-fun FrageScreen(viewModel: QuizViewModel, onExit: () -> Unit, onFinished: (QuizViewModel) -> Unit) {
+fun FrageScreen(
+    viewModel: QuizViewModel,
+    repository: QuestionRepository,
+    languageCode: String?,
+    onExit: () -> Unit,
+    onFinished: (QuizViewModel) -> Unit,
+) {
     if (viewModel.finished) {
         onFinished(viewModel)
         return
     }
 
+    val context = LocalContext.current
+    val prefs = remember { UserPrefs(context) }
+    var translationsOn by remember { mutableStateOf(languageCode != null && prefs.translationsVisible) }
+
     val question = viewModel.currentQuestion
+    var translations by remember { mutableStateOf<Map<TranslationContentType, String>>(emptyMap()) }
+
+    LaunchedEffect(question.id, translationsOn, languageCode) {
+        if (!translationsOn || languageCode == null) {
+            translations = emptyMap()
+            return@LaunchedEffect
+        }
+        val fields = listOf(
+            TranslationContentType.QUESTION to question.textDe,
+            TranslationContentType.ANSWER_A to question.answerA,
+            TranslationContentType.ANSWER_B to question.answerB,
+            TranslationContentType.ANSWER_C to question.answerC,
+            TranslationContentType.ANSWER_D to question.answerD,
+        )
+        val result = mutableMapOf<TranslationContentType, String>()
+        val newlyTranslated = mutableListOf<TranslationCacheEntry>()
+        for ((type, text) in fields) {
+            val cached = repository.cachedTranslation(question.id, type, languageCode)
+            val value = cached ?: runCatching { TranslationEngine.translate(text, languageCode) }
+                .onSuccess { newlyTranslated.add(TranslationCacheEntry(question.id, type, languageCode, it)) }
+                .getOrNull()
+            if (value != null) result[type] = value
+        }
+        repository.cacheTranslations(newlyTranslated)
+        translations = result
+    }
+
     Surface(modifier = Modifier.fillMaxSize().safeDrawingPadding(), color = MaterialTheme.colorScheme.background) {
         Column(modifier = Modifier.fillMaxSize()) {
             FrageHeader(
@@ -64,14 +115,20 @@ fun FrageScreen(viewModel: QuizViewModel, onExit: () -> Unit, onFinished: (QuizV
                         Spacer(modifier = Modifier.height(LidSpace.x3))
                     }
                     Text(question.textDe, style = LidType.question)
+                    translations[TranslationContentType.QUESTION]?.let { translated ->
+                        Row(modifier = Modifier.padding(top = LidSpace.x3).height(IntrinsicSize.Min)) {
+                            Box(modifier = Modifier.width(2.dp).fillMaxHeight().background(Accent))
+                            Text(translated, style = LidType.translation, modifier = Modifier.padding(start = 12.dp))
+                        }
+                    }
                 }
                 Rule()
 
                 val picked = viewModel.pickedAnswerIndex
-                AnswerRow('A', question.answerA, rowState(picked, 0, question.correctAnswerIndex)) { viewModel.pick(0) }
-                AnswerRow('B', question.answerB, rowState(picked, 1, question.correctAnswerIndex)) { viewModel.pick(1) }
-                AnswerRow('C', question.answerC, rowState(picked, 2, question.correctAnswerIndex)) { viewModel.pick(2) }
-                AnswerRow('D', question.answerD, rowState(picked, 3, question.correctAnswerIndex)) { viewModel.pick(3) }
+                AnswerRow('A', question.answerA, rowState(picked, 0, question.correctAnswerIndex), translations[TranslationContentType.ANSWER_A]) { viewModel.pick(0) }
+                AnswerRow('B', question.answerB, rowState(picked, 1, question.correctAnswerIndex), translations[TranslationContentType.ANSWER_B]) { viewModel.pick(1) }
+                AnswerRow('C', question.answerC, rowState(picked, 2, question.correctAnswerIndex), translations[TranslationContentType.ANSWER_C]) { viewModel.pick(2) }
+                AnswerRow('D', question.answerD, rowState(picked, 3, question.correctAnswerIndex), translations[TranslationContentType.ANSWER_D]) { viewModel.pick(3) }
 
                 if (picked != null && question.explanationDe != null) {
                     Column(modifier = Modifier.padding(top = LidSpace.x4, start = LidSpace.gutter, end = LidSpace.gutter, bottom = LidSpace.x4)) {
@@ -83,10 +140,22 @@ fun FrageScreen(viewModel: QuizViewModel, onExit: () -> Unit, onFinished: (QuizV
 
             Rule()
             Row(modifier = Modifier.padding(vertical = LidSpace.x4, horizontal = LidSpace.gutter)) {
+                if (languageCode != null) {
+                    LidButton(
+                        onClick = {
+                            translationsOn = !translationsOn
+                            prefs.translationsVisible = translationsOn
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = MaterialTheme.colorScheme.onBackground),
+                    ) {
+                        Text(if (translationsOn) languageCode else "DE")
+                    }
+                    Spacer(modifier = Modifier.width(LidSpace.x2))
+                }
                 LidButton(
                     onClick = viewModel::next,
                     enabled = viewModel.pickedAnswerIndex != null,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.weight(1f),
                 ) {
                     Text(if (viewModel.pickedAnswerIndex != null) "Weiter" else "Antwort wählen")
                 }

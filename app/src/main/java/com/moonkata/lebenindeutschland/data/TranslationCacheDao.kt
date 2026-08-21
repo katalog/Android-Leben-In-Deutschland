@@ -17,4 +17,7 @@ interface TranslationCacheDao {
 
     @Query("SELECT COUNT(*) FROM translation_cache WHERE languageCode = :languageCode")
     suspend fun countForLanguage(languageCode: String): Int
+
+    @Query("DELETE FROM translation_cache WHERE languageCode = :languageCode")
+    suspend fun deleteForLanguage(languageCode: String)
 }

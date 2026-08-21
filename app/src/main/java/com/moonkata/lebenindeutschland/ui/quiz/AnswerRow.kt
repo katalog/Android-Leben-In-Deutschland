@@ -3,6 +3,7 @@ package com.moonkata.lebenindeutschland.ui.quiz
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -18,16 +19,18 @@ import androidx.compose.ui.unit.dp
 import com.moonkata.lebenindeutschland.ui.theme.Accent
 import com.moonkata.lebenindeutschland.ui.theme.Accent100
 import com.moonkata.lebenindeutschland.ui.theme.Accent700
+import com.moonkata.lebenindeutschland.ui.theme.Accent800
 import com.moonkata.lebenindeutschland.ui.theme.LidSpace
 import com.moonkata.lebenindeutschland.ui.theme.LidType
 import com.moonkata.lebenindeutschland.ui.theme.Neutral200
+import com.moonkata.lebenindeutschland.ui.theme.Neutral500
 import com.moonkata.lebenindeutschland.ui.theme.Neutral600
 import com.moonkata.lebenindeutschland.ui.theme.Rule
 
 enum class AnswerRowState { UNANSWERED, CORRECT, WRONG_PICKED, WRONG_UNPICKED }
 
 @Composable
-fun AnswerRow(letter: Char, text: String, state: AnswerRowState, onClick: () -> Unit) {
+fun AnswerRow(letter: Char, text: String, state: AnswerRowState, translation: String? = null, onClick: () -> Unit) {
     val rowBackground = when (state) {
         AnswerRowState.CORRECT -> Accent100
         AnswerRowState.WRONG_PICKED -> Neutral200
@@ -40,6 +43,11 @@ fun AnswerRow(letter: Char, text: String, state: AnswerRowState, onClick: () -> 
     }
     val textStyle = if (state == AnswerRowState.CORRECT) LidType.answerCorrect else LidType.answer
     val textColor = if (state == AnswerRowState.WRONG_PICKED) Neutral600 else Color.Unspecified
+    val translationColor = when (state) {
+        AnswerRowState.CORRECT -> Accent800
+        AnswerRowState.WRONG_PICKED -> Neutral500
+        else -> Color.Unspecified
+    }
 
     Box(modifier = Modifier.fillMaxWidth().background(rowBackground)) {
         Row(
@@ -57,10 +65,17 @@ fun AnswerRow(letter: Char, text: String, state: AnswerRowState, onClick: () -> 
                     .fillMaxHeight()
                     .background(if (state == AnswerRowState.CORRECT) Accent else Color.Transparent),
             )
-            Row(modifier = Modifier.padding(vertical = 14.dp, horizontal = LidSpace.gutter)) {
-                Text(letter.toString(), style = LidType.answerLetter, color = letterColor, modifier = Modifier.width(16.dp))
-                Box(modifier = Modifier.width(12.dp))
-                Text(text, style = textStyle, color = textColor)
+            Column(modifier = Modifier.padding(vertical = 14.dp, horizontal = LidSpace.gutter)) {
+                Row {
+                    Text(letter.toString(), style = LidType.answerLetter, color = letterColor, modifier = Modifier.width(16.dp))
+                    Box(modifier = Modifier.width(12.dp))
+                    Text(text, style = textStyle, color = textColor)
+                }
+                if (translation != null) {
+                    Box(modifier = Modifier.padding(top = 9.dp, start = 28.dp)) {
+                        Text(translation, style = LidType.translationSmall, color = translationColor)
+                    }
+                }
             }
         }
     }
