@@ -158,12 +158,23 @@
 ### Phase 8 — 출시 준비
 - [ ] 앱 아이콘, 스토어 리스팅 자산
 - [ ] 서명/빌드 설정
-- [ ] 테스트 (수동 QA, 필요 시 Compose UI 테스트)
+- [x] 테스트 — Compose UI 자동화 테스트 인프라 구축 완료 (`androidTest`): `SpracheScreenTest`, `AnswerRowTest`, `OnboardingFlowTest`(온보딩 전체 플로우 E2E). `ANDROID_SERIAL=<에뮬레이터> ./gradlew :app:connectedDebugAndroidTest`로 실행, 6개 전부 통과 확인
 
 ---
 
 ## 진행 로그
 > 최신 항목이 위로 오도록 기록.
+
+### 2026-08-21 (사용자 요청 3건: 온보딩 2단계, 다운로드 알림/실시간 진행률, 자동화 UI 테스트)
+- **온보딩에 Bundesland 단계 추가** — 원래 SpracheScreen에 있던 "SCHRITT 1 VON 2" kicker가 사실 2단계 온보딩을 암시했는데 Phase 2에서는 1단계만 구현했었음. 이제 언어 선택 후 Bundesland가 없으면 자동으로 "SCHRITT 2 VON 2" 화면으로 이동 (`BundeslandPickerScreen`에 `isOnboardingStep` 파라미터 추가). 언어는 있는데 Bundesland만 없는 기존 사용자도 다음 실행 시 이 단계로 유도됨 (`startDestination` 분기 로직에 반영)
+- **언어팩 다운로드 진행률 알림** — `PreTranslateWorker`를 포그라운드 워커로 전환, `NotificationCompat`으로 "Sprachpaket wird geladen: <언어> · N/2300" 진행바 알림 표시, 완료 시 자동으로 알림 제거. API 34+ 대응으로 매니페스트에 `FOREGROUND_SERVICE_DATA_SYNC` 권한 + `SystemForegroundService`의 `foregroundServiceType="dataSync"` 오버라이드 추가. Android 13+ `POST_NOTIFICATIONS` 런타임 권한 요청을 `MainActivity`에 추가
+- **Mehr 화면 실시간 진행률** — `WorkManager.getWorkInfosForUniqueWorkFlow(...)`를 각 언어 행이 직접 구독해서, DB를 다시 조회하지 않고도 워커의 `setProgress()` 값을 그대로 반영 (예: "80 %"). 완료되면 자동으로 최종 개수를 다시 읽어 "LÖSCHEN"으로 전환
+- **자동화 Compose UI 테스트 도입** — `androidTest` 소스셋 신설, `SpracheScreenTest`(언어 목록/Weiter 활성화), `AnswerRowTest`(클릭 가능 여부/번역 텍스트), `OnboardingFlowTest`(언어→Bundesland→Start 전체 E2E, 방금 만든 온보딩 기능을 직접 회귀 테스트함)
+  - 트러블슈팅: `ActivityScenario.launch`를 테스트 메서드 안에서 수동 호출하면 `createEmptyComposeRule()`과 타이밍이 안 맞아 "No compose hierarchies found" 발생 → `createAndroidComposeRule<MainActivity>()` + 프로퍼티 초기화 순서(룰보다 먼저 선언된 프로퍼티가 먼저 실행됨)를 이용해 SharedPreferences를 액티비티 launch 전에 확실히 초기화
+  - `waitUntil` 조건절에서 `fetchSemanticsNodes()`를 기본 인자로 호출하면 컴포즈 계층이 아직 없을 때 예외를 던져 waitUntil이 재시도 없이 즉시 실패함 → `atLeastOneRootRequired = false`로 호출해 해결
+  - POST_NOTIFICATIONS 시스템 다이얼로그가 화면을 가려 노드를 못 찾는 문제 → `UiAutomation.grantRuntimePermission`으로 테스트 시작 전에 미리 권한 부여
+  - 실행: `ANDROID_SERIAL=emulator-5554 ./gradlew :app:connectedDebugAndroidTest` (물리 기기가 같이 연결되어 있으면 반드시 `ANDROID_SERIAL`로 에뮬레이터를 지정할 것 — 안 그러면 두 기기 모두에서 돌아가려 하다 충돌함)
+- 에뮬레이터 실측: 알림 상태표시줄에 진행바 확인, Mehr에서 "80 %" 등 실시간 갱신 확인, 완료 시 알림 자동 삭제 + "LÖSCHEN" 전환 확인
 
 ### 2026-08-21 (Phase 7 진행 — RTL)
 - 아랍어/페르시아어 RTL 레이아웃 구현 (`ui/theme/Rtl.kt`: `DirectionalContent`, `GermanText`, `isRtlLanguage`)
@@ -226,9 +237,9 @@
 - 저장소 생성, README/.gitignore(Android) 세팅, 디자인 zip 압축 해제, 최초 plan.md 작성
 
 ## 다음 할 일 (Next Up)
-1. **핵심 기능 5가지(문제 데이터, 모의고사, 오답 재연습, 통계, 온디바이스 번역) 전부 구현 완료.** RTL, 이미지 접근성, Bundesland 재선택까지 완료. 남은 Phase 7 항목: 아이콘 세트, TalkBack 전체 감사
-2. Phase 8(출시 준비: 앱 아이콘, 스토어 자산, 서명, 테스트)은 아직 시작 전 — 이 단계는 브랜딩/스토어 문구 등 사용자 결정이 필요한 항목이 많음
+1. **핵심 기능 5가지 + 온보딩 2단계 + 다운로드 알림/실시간 진행률 + 자동화 UI 테스트까지 전부 구현·검증 완료.** 남은 Phase 7 항목: 아이콘 세트, TalkBack 전체 감사
+2. Phase 8(출시 준비: 앱 아이콘, 스토어 자산, 서명, 테스트)은 아직 시작 전 — 브랜딩/스토어 문구 등 사용자 결정이 필요한 항목이 많음
 3. 알려진 제약: 시험 도중 앱 프로세스가 완전히 강제종료되면 타이머/진행상황이 복구되지 않음 (화면 회전은 문제없음)
 4. 언어 재선택 시 네비게이션 백스택이 완전히 정리되지 않는 사소한 이슈
 5. 번역 텍스트가 길 경우 레이아웃 줄바꿈/여러 줄 처리는 육안 확인만 했고 극단적으로 긴 문자열에 대한 별도 검증은 아직 안 함
-6. 자동화된 테스트(Compose UI 테스트 등)는 아직 없음 — 지금까지는 전부 에뮬레이터 수동/스크립트 조작으로 검증
+6. 자동화 테스트는 3개뿐(SpracheScreen/AnswerRow/온보딩 E2E) — FrageScreen/ErgebnisScreen/StatistikScreen 등은 아직 수동 검증에만 의존

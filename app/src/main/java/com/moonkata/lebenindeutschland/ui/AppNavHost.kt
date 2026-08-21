@@ -44,6 +44,7 @@ private object Routes {
     const val FRAGE = "frage"
     const val ERGEBNIS = "ergebnis"
     const val BUNDESLAND_PICKER = "bundesland_picker"
+    const val BUNDESLAND_ONBOARDING = "bundesland_onboarding"
     const val STATISTIK = "statistik"
     const val MEHR = "mehr"
 }
@@ -94,14 +95,31 @@ fun AppNavHost() {
         }
     }
 
-    val startDestination = if (prefs.selectedLanguage == null) Routes.SPRACHE else Routes.START
+    val startDestination = when {
+        prefs.selectedLanguage == null -> Routes.SPRACHE
+        prefs.bundesland == null -> Routes.BUNDESLAND_ONBOARDING
+        else -> Routes.START
+    }
 
     NavHost(navController = navController, startDestination = startDestination) {
         composable(Routes.SPRACHE) {
             SpracheScreen(onLanguageChosen = { code ->
                 prefs.selectedLanguage = code
                 PreTranslateWorker.enqueue(context, code)
-                navController.navigate(Routes.START) { popUpTo(Routes.SPRACHE) { inclusive = true } }
+                if (prefs.bundesland == null) {
+                    navController.navigate(Routes.BUNDESLAND_ONBOARDING)
+                } else {
+                    navController.navigate(Routes.START) { popUpTo(Routes.SPRACHE) { inclusive = true } }
+                }
+            })
+        }
+
+        composable(Routes.BUNDESLAND_ONBOARDING) {
+            BundeslandPickerScreen(isOnboardingStep = true, onChosen = { code ->
+                prefs.bundesland = code
+                // Works whether this screen was reached via Sprache (fresh install) or was
+                // itself the start destination (language already set, Bundesland wasn't).
+                navController.navigate(Routes.START) { popUpTo(navController.graph.startDestinationId) { inclusive = true } }
             })
         }
 

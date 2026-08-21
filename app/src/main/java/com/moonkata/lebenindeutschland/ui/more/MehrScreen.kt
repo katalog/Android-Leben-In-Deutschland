@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -23,6 +24,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import com.moonkata.lebenindeutschland.data.Languages
 import com.moonkata.lebenindeutschland.data.QuestionRepository
 import com.moonkata.lebenindeutschland.data.Topics
@@ -38,8 +41,6 @@ import com.moonkata.lebenindeutschland.ui.theme.Neutral600
 import com.moonkata.lebenindeutschland.ui.theme.Rule
 import kotlinx.coroutines.launch
 
-private const val TOTAL_TRANSLATABLE_FIELDS = 460 * 5
-
 @Composable
 fun MehrScreen(
     repository: QuestionRepository,
@@ -49,15 +50,8 @@ fun MehrScreen(
 ) {
     val context = LocalContext.current
     val prefs = remember { UserPrefs(context) }
-    val scope = rememberCoroutineScope()
     val language = Languages.all.find { it.code == prefs.selectedLanguage }
     val bundesland = prefs.bundesland?.let { Topics.bundeslandNames[it] }
-
-    var coverage by remember { mutableStateOf<Map<String, Int>>(emptyMap()) }
-
-    LaunchedEffect(Unit) {
-        coverage = Languages.all.associate { it.code to repository.translationCoverage(it.code) }
-    }
 
     Surface(modifier = Modifier.fillMaxSize().statusBarsPadding(), color = MaterialTheme.colorScheme.background) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -75,21 +69,7 @@ fun MehrScreen(
                     modifier = Modifier.padding(top = LidSpace.x4, start = LidSpace.gutter, bottom = LidSpace.x2),
                 )
                 Languages.all.forEach { lang ->
-                    val count = coverage[lang.code] ?: 0
-                    LanguageModelRow(
-                        native = lang.native,
-                        translatedCount = count,
-                        onDownload = {
-                            PreTranslateWorker.enqueue(context, lang.code)
-                        },
-                        onDelete = {
-                            scope.launch {
-                                TranslationEngine.deleteModel(lang.code)
-                                repository.clearTranslationCache(lang.code)
-                                coverage = coverage + (lang.code to 0)
-                            }
-                        },
-                    )
+                    LanguageModelRow(languageCode = lang.code, native = lang.native, repository = repository)
                 }
             }
             LidBottomBar(active = BottomTab.MEHR, onSelect = onSelectTab)
@@ -97,25 +77,59 @@ fun MehrScreen(
     }
 }
 
+/** Owns its own live state: initial DB count, then whatever PreTranslateWorker reports while running. */
 @Composable
-private fun LanguageModelRow(native: String, translatedCount: Int, onDownload: () -> Unit, onDelete: () -> Unit) {
+private fun LanguageModelRow(languageCode: String, native: String, repository: QuestionRepository) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var translatedCount by remember(languageCode) { mutableIntStateOf(0) }
+    var isRunning by remember(languageCode) { mutableStateOf(false) }
+
+    LaunchedEffect(languageCode) {
+        translatedCount = repository.translationCoverage(languageCode)
+        WorkManager.getInstance(context)
+            .getWorkInfosForUniqueWorkFlow(PreTranslateWorker.workName(languageCode))
+            .collect { infos ->
+                val info = infos.firstOrNull() ?: return@collect
+                isRunning = info.state == WorkInfo.State.RUNNING || info.state == WorkInfo.State.ENQUEUED
+                val progressDone = info.progress.getInt(PreTranslateWorker.KEY_DONE, -1)
+                if (progressDone >= 0) translatedCount = progressDone
+                if (info.state == WorkInfo.State.SUCCEEDED) {
+                    translatedCount = repository.translationCoverage(languageCode)
+                    isRunning = false
+                }
+            }
+    }
+
     val downloaded = translatedCount > 0
+    val percent = (translatedCount * 100 / PreTranslateWorker.TOTAL_FIELDS).coerceAtMost(100)
+
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp, horizontal = LidSpace.gutter),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(native, style = LidType.rowTitle)
-            if (downloaded) {
-                val percent = (translatedCount * 100 / TOTAL_TRANSLATABLE_FIELDS).coerceAtMost(100)
-                Text(
+            when {
+                isRunning -> Text("$percent %", style = LidType.label, color = Accent700)
+                downloaded -> Text(
                     if (percent >= 100) "LÖSCHEN" else "$percent % · LÖSCHEN",
                     style = LidType.label,
                     color = Accent700,
-                    modifier = Modifier.clickable(onClick = onDelete),
+                    modifier = Modifier.clickable {
+                        scope.launch {
+                            TranslationEngine.deleteModel(languageCode)
+                            repository.clearTranslationCache(languageCode)
+                            translatedCount = 0
+                        }
+                    },
                 )
-            } else {
-                Text("LADEN", style = LidType.label, color = Accent700, modifier = Modifier.clickable(onClick = onDownload))
+                else -> Text(
+                    "LADEN",
+                    style = LidType.label,
+                    color = Accent700,
+                    modifier = Modifier.clickable { PreTranslateWorker.enqueue(context, languageCode) },
+                )
             }
         }
         Rule()
