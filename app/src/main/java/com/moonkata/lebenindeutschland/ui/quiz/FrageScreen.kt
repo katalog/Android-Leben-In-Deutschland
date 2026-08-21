@@ -115,7 +115,7 @@ fun FrageScreen(
                 Rule()
                 Column(modifier = Modifier.padding(LidSpace.gutter)) {
                     question.imageAsset?.let { asset ->
-                        AssetImage(asset, modifier = Modifier.fillMaxWidth())
+                        AssetImage(asset, contentDescription = question.imageCaption ?: question.textDe, modifier = Modifier.fillMaxWidth())
                         Spacer(modifier = Modifier.height(LidSpace.x3))
                     }
                     GermanText(question.textDe, style = LidType.question)
@@ -213,7 +213,7 @@ private fun QuizProgressBar(fraction: Float) {
 }
 
 @Composable
-private fun AssetImage(assetName: String, modifier: Modifier = Modifier) {
+private fun AssetImage(assetName: String, contentDescription: String, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val bitmapState = produceState<ImageBitmap?>(initialValue = null, assetName) {
         value = try {
@@ -223,6 +223,6 @@ private fun AssetImage(assetName: String, modifier: Modifier = Modifier) {
         }
     }
     bitmapState.value?.let { bitmap ->
-        Image(bitmap = bitmap, contentDescription = null, modifier = modifier)
+        Image(bitmap = bitmap, contentDescription = contentDescription, modifier = modifier)
     }
 }
