@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="_ds/modernist-4dc46499-3b15-4dc0-b110-91b9089d4f43/styles.css">
+<script src="_ds/modernist-4dc46499-3b15-4dc0-b110-91b9089d4f43/_ds_bundle.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Noto+Sans+Arabic:wght@400;600;800&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+:root{--font-i18n:"Archivo","Noto Sans KR","Noto Sans Arabic",system-ui,sans-serif}
+body{margin:0;background:#f3f2f2;font-family:var(--font-body);color:var(--color-text);text-wrap:pretty}
+a{color:var(--color-accent-700)}a:hover{color:var(--color-accent)}
+.dv-turn{padding:44px 48px 36px;border-bottom:2px solid var(--color-divider);scroll-margin-top:16px}
+.dv-thd{display:flex;align-items:baseline;gap:12px;margin:0 0 26px}
+.dv-tid{font:700 11px/1 ui-monospace,Menlo,monospace;padding:4px 8px;background:#201e1d;color:#f3f2f2;text-decoration:none}
+.dv-tname{font:800 14px/1.2 var(--font-heading);letter-spacing:.02em;text-transform:uppercase}
+.dv-opts{display:flex;flex-wrap:wrap;gap:44px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:12px;scroll-margin-top:16px}
+.dv-olabel{display:flex;align-items:baseline;gap:10px;font:400 12.5px/1.45 var(--font-body);color:var(--color-neutral-700);max-width:402px}
+.dv-oid{font:700 11px/1 ui-monospace,Menlo,monospace;padding:4px 7px;background:var(--color-neutral-300);color:#201e1d;text-decoration:none;flex:none}
+.dv-opt:target .dv-oid{background:var(--color-accent);color:#fff}
+.dv-next{margin:26px 0 0;font:12px/1.6 var(--font-body);color:var(--color-neutral-700)}
+.qrow{cursor:pointer;transition:background .12s}
+.qrow:hover{background:var(--color-accent-100)}
+.jump{font:700 11px/1 var(--font-body);letter-spacing:.06em;text-transform:uppercase;padding:9px 11px;border:2px solid var(--color-divider);background:transparent;cursor:pointer;color:#201e1d}
+.jump:hover{background:var(--color-accent-100);border-color:var(--color-accent)}
+</style></helmet>
+
+<section class="dv-turn" style="padding-bottom:30px">
+<div class="dv-thd"><span class="dv-tid">BRIEF</span><span class="dv-tname">310 — Leben in Deutschland</span></div>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:36px;max-width:1400px">
+<div><div style="font:700 11px/1.4 var(--font-body);letter-spacing:.09em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:10px">Assumption</div><p style="margin:0;font:400 14px/1.65 var(--font-body)">Mixed audience — A1 arrivals through B1 citizenship applicants. The catalogue is fixed: 300 general questions plus 10 per Bundesland, so the app is named for it. The exam simulation is accurate: 33 questions, 60 minutes, 17 correct to pass.</p></div>
+<div><div style="font:700 11px/1.4 var(--font-body);letter-spacing:.09em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:10px">Language model</div><p style="margin:0;font:400 14px/1.65 var(--font-body)">German is always the primary text — the real exam is German-only, so the app must never let a learner read only their own language. Translation is a second layer: revealed, side-by-side, or full RTL. Interface labels stay German with the translation beneath.</p></div>
+<div><div style="font:700 11px/1.4 var(--font-body);letter-spacing:.09em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:10px">Why this style fits</div><p style="margin:0;font:400 14px/1.65 var(--font-body)">Modernist's flat 2px rules, zero radius and single red read as official rather than playful — the register of the document this test belongs to. It also buys clarity: rules separate answers without boxes, and large flush-left Archivo survives being read in a second language.</p></div>
+<div><div style="font:700 11px/1.4 var(--font-body);letter-spacing:.09em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:10px">Open questions</div><p style="margin:0;font:400 14px/1.65 var(--font-body)">Audio read-aloud? Offline download? Is the Bundesland pack free or paid? And should wrong answers feed a spaced-repetition queue — that would change the home screen materially.</p></div>
+</div>
+</section>
+
+<section class="dv-turn" id="t2">
+<div class="dv-thd"><a class="dv-tid" href="#t2">2</a><span class="dv-tname">Question screen — three translation models</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="2a">
+<div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a>Side-by-side. German left, Türkçe right, one vertical rule between. Densest — best for B1 learners self-checking.</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+<div style="height:100%;box-sizing:border-box;padding-top:54px;background:#f3f2f2;display:flex;flex-direction:column;font-family:var(--font-body)">
+<div style="display:flex;align-items:baseline;justify-content:space-between;padding:12px 20px 10px"><span style="font:700 12px/1 var(--font-body);letter-spacing:.1em;font-feature-settings:'tnum' 1">FRAGE 14 / 33</span><span style="font:700 12px/1 var(--font-body);letter-spacing:.1em;color:var(--color-accent-700)">DE ▸ TR</span></div>
+<div style="display:flex;border-top:2px solid var(--color-divider);border-bottom:2px solid var(--color-divider)">
+<div style="flex:1;padding:16px 14px 18px 20px;border-right:2px solid var(--color-divider)"><div style="font:800 19px/1.16 var(--font-heading);letter-spacing:-.02em">Wahlen in Deutschland sind frei. Was bedeutet das?</div></div>
+<div style="flex:1;padding:16px 20px 18px 14px"><div style="font:500 15px/1.3 var(--font-body);color:var(--color-neutral-700)">Almanya'da seçimler özgürdür. Bu ne anlama gelir?</div></div>
+</div>
+<div style="flex:1;overflow:auto">
+<div style="display:flex;border-bottom:2px solid var(--color-divider)"><div style="width:34px;flex:none;padding:12px 0 0;text-align:center;font:800 13px/1 var(--font-heading);border-right:2px solid var(--color-divider)">A</div><div style="flex:1;padding:11px 12px 13px;border-right:2px solid var(--color-divider);font:500 13.5px/1.4 var(--font-body)">Der Wähler kann Geld dafür bekommen, wenn er wählt.</div><div style="flex:1;padding:11px 14px 13px;font:400 13px/1.4 var(--font-body);color:var(--color-neutral-700)">Seçmen oy verdiği için para alabilir.</div></div>
+<div style="display:flex;border-bottom:2px solid var(--color-divider)"><div style="width:34px;flex:none;padding:12px 0 0;text-align:center;font:800 13px/1 var(--font-heading);border-right:2px solid var(--color-divider)">B</div><div style="flex:1;padding:11px 12px 13px;border-right:2px solid var(--color-divider);font:500 13.5px/1.4 var(--font-body)">Nur Personen, die Steuern zahlen, dürfen wählen.</div><div style="flex:1;padding:11px 14px 13px;font:400 13px/1.4 var(--font-body);color:var(--color-neutral-700)">Sadece vergi ödeyen kişiler oy verebilir.</div></div>
+<div style="display:flex;border-bottom:2px solid var(--color-divider);background:var(--color-accent-100);box-shadow:inset 4px 0 0 var(--color-accent)"><div style="width:34px;flex:none;padding:12px 0 0;text-align:center;font:800 13px/1 var(--font-heading);border-right:2px solid var(--color-divider);color:var(--color-accent-700)">C</div><div style="flex:1;padding:11px 12px 13px;border-right:2px solid var(--color-divider);font:600 13.5px/1.4 var(--font-body)">Der Wähler darf bei der Wahl weder beeinflusst noch gezwungen werden.</div><div style="flex:1;padding:11px 14px 13px;font:400 13px/1.4 var(--font-body);color:var(--color-accent-800)">Seçmen oy verirken ne etkilenebilir ne de zorlanabilir.</div></div>
+<div style="display:flex;border-bottom:2px solid var(--color-divider)"><div style="width:34px;flex:none;padding:12px 0 0;text-align:center;font:800 13px/1 var(--font-heading);border-right:2px solid var(--color-divider)">D</div><div style="flex:1;padding:11px 12px 13px;border-right:2px solid var(--color-divider);font:500 13.5px/1.4 var(--font-body)">Alle wahlberechtigten Personen müssen wählen.</div><div style="flex:1;padding:11px 14px 13px;font:400 13px/1.4 var(--font-body);color:var(--color-neutral-700)">Oy verme hakkına sahip herkes oy vermek zorundadır.</div></div>
+</div>
+<div style="border-top:2px solid var(--color-divider);padding:14px 20px 46px;background:#f3f2f2;display:flex;gap:10px"><button class="btn btn-secondary" style="flex:none">A/A</button><button class="btn btn-primary btn-block">Weiter · İleri</button></div>
+</div>
+</x-import>
+</div>
+
+<div class="dv-opt" id="2b">
+<div class="dv-olabel"><a class="dv-oid" href="#2b">2b</a>Tap-to-reveal. German only until you ask; translation slides in per answer. Trains reading German first — this is the one used in the flow below.</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+<div style="height:100%;box-sizing:border-box;padding-top:54px;background:#f3f2f2;display:flex;flex-direction:column;font-family:var(--font-body)">
+<div style="display:flex;align-items:baseline;justify-content:space-between;padding:12px 20px 10px"><span style="font:700 12px/1 var(--font-body);letter-spacing:.1em;font-feature-settings:'tnum' 1">FRAGE 14 / 33</span><span style="font:700 12px/1 var(--font-body);letter-spacing:.1em;color:var(--color-accent-700)">TÜRKÇE</span></div>
+<div style="border-top:2px solid var(--color-divider);border-bottom:2px solid var(--color-divider);padding:20px">
+<div style="font:800 27px/1.1 var(--font-heading);letter-spacing:-.03em">Wahlen in Deutschland sind frei. Was bedeutet das?</div>
+<div style="margin-top:12px;padding-left:12px;border-left:2px solid var(--color-accent);font:500 15px/1.35 var(--font-body);color:var(--color-neutral-700)">Almanya'da seçimler özgürdür. Bu ne anlama gelir?</div>
+</div>
+<div style="flex:1;overflow:auto">
+<div style="display:flex;gap:12px;padding:14px 20px 15px;border-bottom:2px solid var(--color-divider)"><span style="font:800 14px/1.35 var(--font-heading);width:16px;flex:none">A</span><span style="font:500 15px/1.35 var(--font-body)">Der Wähler kann Geld dafür bekommen, wenn er wählt.</span></div>
+<div style="display:flex;gap:12px;padding:14px 20px 15px;border-bottom:2px solid var(--color-divider)"><span style="font:800 14px/1.35 var(--font-heading);width:16px;flex:none">B</span><span style="font:500 15px/1.35 var(--font-body)">Nur Personen, die Steuern zahlen, dürfen wählen.</span></div>
+<div style="padding:14px 20px 15px;border-bottom:2px solid var(--color-divider);background:var(--color-accent-100);box-shadow:inset 4px 0 0 var(--color-accent)"><div style="display:flex;gap:12px"><span style="font:800 14px/1.35 var(--font-heading);width:16px;flex:none;color:var(--color-accent-700)">C</span><span style="font:600 15px/1.35 var(--font-body)">Der Wähler darf bei der Wahl weder beeinflusst noch gezwungen werden und keine Nachteile haben.</span></div><div style="margin:9px 0 0 28px;font:400 13.5px/1.4 var(--font-body);color:var(--color-accent-800)">Seçmen oy verirken ne etkilenebilir ne de zorlanabilir ve hiçbir dezavantaj yaşamaz.</div></div>
+<div style="display:flex;gap:12px;padding:14px 20px 15px;border-bottom:2px solid var(--color-divider)"><span style="font:800 14px/1.35 var(--font-heading);width:16px;flex:none">D</span><span style="font:500 15px/1.35 var(--font-body)">Alle wahlberechtigten Personen müssen wählen.</span></div>
+<div style="padding:16px 20px;font:400 13px/1.55 var(--font-body);color:var(--color-neutral-700)"><span style="font-weight:700;color:var(--color-text)">Erklärung.</span> Frei heißt: niemand darf Ihnen sagen, wen Sie wählen sollen, und niemand darf Sie dafür bestrafen.</div>
+</div>
+<div style="border-top:2px solid var(--color-divider);padding:14px 20px 46px;display:flex;gap:10px"><button class="btn btn-secondary" style="flex:none">TR</button><button class="btn btn-primary btn-block">Weiter · İleri</button></div>
+</div>
+</x-import>
+</div>
+
+<div class="dv-opt" id="2c">
+<div class="dv-olabel"><a class="dv-oid" href="#2c">2c</a>Full RTL. Interface mirrors for Arabic and Farsi; German stays LTR inside a mirrored frame. The red rule flips to the right edge.</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+<div dir="rtl" style="height:100%;box-sizing:border-box;padding-top:54px;background:#f3f2f2;display:flex;flex-direction:column;font-family:'Noto Sans Arabic',var(--font-body)">
+<div style="display:flex;align-items:baseline;justify-content:space-between;padding:12px 20px 10px"><span style="font:700 12px/1 var(--font-body);letter-spacing:.1em;font-feature-settings:'tnum' 1;direction:ltr">FRAGE 14 / 33</span><span style="font:600 13px/1 'Noto Sans Arabic';color:var(--color-accent-700)">العربية</span></div>
+<div style="border-top:2px solid var(--color-divider);border-bottom:2px solid var(--color-divider);padding:20px">
+<div dir="ltr" style="font:800 24px/1.12 var(--font-heading);letter-spacing:-.03em;text-align:left">Wahlen in Deutschland sind frei. Was bedeutet das?</div>
+<div style="margin-top:13px;padding-right:12px;border-right:2px solid var(--color-accent);font:400 16px/1.6 'Noto Sans Arabic';color:var(--color-neutral-700)">الانتخابات في ألمانيا حرة. ماذا يعني ذلك؟</div>
+</div>
+<div style="flex:1;overflow:auto">
+<div style="padding:13px 20px 14px;border-bottom:2px solid var(--color-divider)"><div dir="ltr" style="display:flex;gap:12px;text-align:left"><span style="font:800 14px/1.35 var(--font-heading);width:16px;flex:none">A</span><span style="font:500 14px/1.35 var(--font-body)">Der Wähler kann Geld dafür bekommen, wenn er wählt.</span></div><div style="margin-top:7px;font:400 14px/1.6 'Noto Sans Arabic';color:var(--color-neutral-700)">يمكن للناخب أن يحصل على مال مقابل التصويت.</div></div>
+<div style="padding:13px 20px 14px;border-bottom:2px solid var(--color-divider)"><div dir="ltr" style="display:flex;gap:12px;text-align:left"><span style="font:800 14px/1.35 var(--font-heading);width:16px;flex:none">B</span><span style="font:500 14px/1.35 var(--font-body)">Nur Personen, die Steuern zahlen, dürfen wählen.</span></div><div style="margin-top:7px;font:400 14px/1.6 'Noto Sans Arabic';color:var(--color-neutral-700)">الأشخاص الذين يدفعون الضرائب فقط يحق لهم التصويت.</div></div>
+<div style="padding:13px 20px 14px;border-bottom:2px solid var(--color-divider);background:var(--color-accent-100);box-shadow:inset -4px 0 0 var(--color-accent)"><div dir="ltr" style="display:flex;gap:12px;text-align:left"><span style="font:800 14px/1.35 var(--font-heading);width:16px;flex:none;color:var(--color-accent-700)">C</span><span style="font:600 14px/1.35 var(--font-body)">Der Wähler darf bei der Wahl weder beeinflusst noch gezwungen werden.</span></div><div style="margin-top:7px;font:400 14px/1.6 'Noto Sans Arabic';color:var(--color-accent-800)">لا يجوز التأثير على الناخب أو إجباره عند التصويت.</div></div>
+<div style="padding:13px 20px 14px;border-bottom:2px solid var(--color-divider)"><div dir="ltr" style="display:flex;gap:12px;text-align:left"><span style="font:800 14px/1.35 var(--font-heading);width:16px;flex:none">D</span><span style="font:500 14px/1.35 var(--font-body)">Alle wahlberechtigten Personen müssen wählen.</span></div><div style="margin-top:7px;font:400 14px/1.6 'Noto Sans Arabic';color:var(--color-neutral-700)">يجب على جميع من لهم حق التصويت أن يصوّتوا.</div></div>
+</div>
+<div style="border-top:2px solid var(--color-divider);padding:14px 20px 46px;display:flex;gap:10px"><button class="btn btn-secondary" style="flex:none">AR</button><button class="btn btn-primary btn-block">التالي · Weiter</button></div>
+</div>
+</x-import>
+</div>
+
+</div>
+<p class="dv-next">Try next: "make <a class="dv-oid" href="#2b">2b</a> the default and drop <a class="dv-oid" href="#2a">2a</a>" · "add audio read-aloud to <a class="dv-oid" href="#2b">2b</a>" · "show the Bundesland picker"</p>
+</section>
+
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">Core flow — live prototype</span></div>
+<div class="dv-opts">
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Tap through it: pick a language, start a practice round, answer, run the exam, read the result. Buttons under the phone jump to any screen.</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+<div style="height:100%;box-sizing:border-box;padding-top:54px;background:#f3f2f2;display:flex;flex-direction:column;font-family:var(--font-body);overflow:hidden">
+
+<sc-if value="{{ isLang }}" hint-placeholder-val="{{ true }}">
+<div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+<div style="padding:22px 20px 18px"><div style="font:700 11px/1 var(--font-body);letter-spacing:.12em;color:var(--color-accent-700);margin-bottom:14px">SCHRITT 1 VON 2</div><div style="font:800 32px/1.06 var(--font-heading);letter-spacing:-.035em">In welcher Sprache sollen wir übersetzen?</div><div style="margin-top:10px;font:400 14px/1.5 var(--font-body);color:var(--color-neutral-700)">Die Fragen bleiben immer auf Deutsch. Die Prüfung ist auf Deutsch.</div></div>
+<div style="border-top:2px solid var(--color-divider);flex:1;overflow:auto">
+<sc-for list="{{ languages }}" as="l" hint-placeholder-count="6">
+<div class="qrow" onClick="{{ l.pick }}" style="{{ l.rowStyle }}"><div style="display:flex;flex-direction:column;gap:2px"><span style="font:700 17px/1.35 var(--font-i18n)">{{ l.native }}</span><span style="font:400 12px/1.2 var(--font-body);color:var(--color-neutral-600)">{{ l.de }}</span></div><span style="{{ l.markStyle }}">{{ l.code }}</span></div>
+</sc-for>
+</div>
+<div style="border-top:2px solid var(--color-divider);padding:14px 20px 46px"><button class="btn btn-primary btn-block" onClick="{{ goHome }}">Weiter</button></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isHome }}">
+<div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+<div style="flex:1;overflow:auto">
+<div style="padding:20px 20px 16px"><div style="display:flex;align-items:baseline;justify-content:space-between"><div style="font:800 30px/1.06 var(--font-heading);letter-spacing:-.035em">Guten Tag,<br>Amina</div><span class="tag tag-outline">{{ langCode }}</span></div></div>
+<div style="border-top:2px solid var(--color-divider);border-bottom:2px solid var(--color-divider);padding:16px 20px">
+<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:9px"><span style="font:700 11px/1 var(--font-body);letter-spacing:.1em">GELERNT</span><span style="font:800 15px/1 var(--font-heading);font-feature-settings:'tnum' 1">214 / 310</span></div>
+<div style="height:10px;background:var(--color-neutral-300);display:flex"><div style="width:69%;background:var(--color-accent)"></div></div>
+</div>
+<div onClick="{{ startExam }}" style="cursor:pointer;background:var(--color-accent);color:#fff;padding:22px 20px 24px;border-bottom:2px solid var(--color-divider)"><div style="font:800 27px/1.05 var(--font-heading);letter-spacing:-.035em">Prüfung<br>simulieren</div><div style="margin-top:12px;font:600 12px/1 var(--font-body);letter-spacing:.08em">33 FRAGEN · 60 MIN · 17 ZUM BESTEHEN</div></div>
+<div style="padding:16px 20px 8px;font:700 11px/1 var(--font-body);letter-spacing:.1em;color:var(--color-neutral-700)">THEMEN ÜBEN</div>
+<sc-for list="{{ topics }}" as="t" hint-placeholder-count="4">
+<div class="qrow" onClick="{{ startPractice }}" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px;border-top:2px solid var(--color-divider)"><span style="font:600 15px/1.25 var(--font-body)">{{ t.name }}</span><span style="font:700 12px/1 var(--font-body);font-feature-settings:'tnum' 1;color:var(--color-neutral-700);flex:none">{{ t.count }}</span></div>
+</sc-for>
+<div style="border-top:2px solid var(--color-divider);padding:16px 20px 20px;display:flex;align-items:baseline;justify-content:space-between"><div><div style="font:700 11px/1 var(--font-body);letter-spacing:.1em;color:var(--color-neutral-700);margin-bottom:6px">BUNDESLAND</div><div style="font:800 20px/1 var(--font-heading)">Bayern</div></div><span style="font:700 12px/1 var(--font-body);color:var(--color-accent-700)">+10 FRAGEN</span></div>
+</div>
+<div style="border-top:2px solid var(--color-divider);display:flex;padding-bottom:30px">
+<div onClick="{{ startPractice }}" style="flex:1;padding:12px 0 10px;text-align:center;cursor:pointer;font:700 10px/1 var(--font-body);letter-spacing:.08em;color:var(--color-accent-700);border-right:2px solid var(--color-divider)">ÜBEN</div>
+<div onClick="{{ startExam }}" style="flex:1;padding:12px 0 10px;text-align:center;cursor:pointer;font:700 10px/1 var(--font-body);letter-spacing:.08em;border-right:2px solid var(--color-divider)">PRÜFUNG</div>
+<div onClick="{{ goResults }}" style="flex:1;padding:12px 0 10px;text-align:center;cursor:pointer;font:700 10px/1 var(--font-body);letter-spacing:.08em;border-right:2px solid var(--color-divider)">FORTSCHRITT</div>
+<div style="flex:1;padding:12px 0 10px;text-align:center;font:700 10px/1 var(--font-body);letter-spacing:.08em">MEHR</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isQuiz }}">
+<div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 20px 10px"><span onClick="{{ goHome }}" style="cursor:pointer;font:700 12px/1 var(--font-body);letter-spacing:.06em">✕ ABBRECHEN</span><span style="font:700 12px/1 var(--font-body);letter-spacing:.1em;font-feature-settings:'tnum' 1">{{ counter }}</span><span style="font:700 12px/1 var(--font-body);letter-spacing:.1em;color:var(--color-accent-700);font-feature-settings:'tnum' 1">{{ rightMeta }}</span></div>
+<div style="height:4px;background:var(--color-neutral-300);display:flex"><div style="{{ progStyle }}"></div></div>
+<div style="border-top:2px solid var(--color-divider);border-bottom:2px solid var(--color-divider);padding:20px">
+<div style="font:800 26px/1.1 var(--font-heading);letter-spacing:-.03em">{{ q.de }}</div>
+<sc-if value="{{ showTrans }}" hint-placeholder-val="{{ true }}">
+<div style="margin-top:12px;padding-left:12px;border-left:2px solid var(--color-accent);font:500 15px/1.45 var(--font-i18n);color:var(--color-neutral-700)">{{ q.tr }}</div>
+</sc-if>
+</div>
+<div style="flex:1;overflow:auto">
+<sc-for list="{{ answers }}" as="a" hint-placeholder-count="4">
+<div class="qrow" onClick="{{ a.pick }}" style="{{ a.rowStyle }}">
+<div style="display:flex;gap:12px"><span style="{{ a.letterStyle }}">{{ a.letter }}</span><span style="{{ a.textStyle }}">{{ a.de }}</span></div>
+<sc-if value="{{ showTrans }}" hint-placeholder-val="{{ true }}"><div style="{{ a.transStyle }}">{{ a.tr }}</div></sc-if>
+</div>
+</sc-for>
+<sc-if value="{{ answered }}">
+<div style="padding:16px 20px;border-bottom:2px solid var(--color-divider);font:400 13px/1.55 var(--font-body);color:var(--color-neutral-700)"><span style="font-weight:700;color:var(--color-text)">Erklärung. </span>{{ q.why }}</div>
+</sc-if>
+</div>
+<div style="border-top:2px solid var(--color-divider);padding:14px 20px 46px;display:flex;gap:10px">
+<button class="btn btn-secondary" style="flex:none" onClick="{{ toggleTrans }}">{{ transBtn }}</button>
+<button class="btn btn-primary btn-block" onClick="{{ next }}">{{ nextLabel }}</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isResults }}">
+<div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+<div style="flex:1;overflow:auto">
+<div style="background:var(--color-accent);color:#fff;padding:24px 20px 26px"><div style="font:700 11px/1 var(--font-body);letter-spacing:.12em;margin-bottom:14px">MODELLTEST · 60 MIN</div><div style="display:flex;align-items:flex-end;gap:14px"><span style="font:800 74px/.82 var(--font-heading);letter-spacing:-.05em;font-feature-settings:'tnum' 1">28</span><span style="font:700 20px/1 var(--font-heading);padding-bottom:6px">/ 33</span></div><div style="margin-top:16px;font:800 22px/1 var(--font-heading);letter-spacing:-.02em">BESTANDEN</div><div style="margin-top:6px;font:500 13px/1.4 var(--font-body)">Geçtiniz — 17 doğru cevap yeterliydi.</div></div>
+<div style="padding:16px 20px 8px;font:700 11px/1 var(--font-body);letter-spacing:.1em;color:var(--color-neutral-700)">NACH THEMA</div>
+<sc-for list="{{ breakdown }}" as="b" hint-placeholder-count="4">
+<div style="border-top:2px solid var(--color-divider);padding:13px 20px"><div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px"><span style="font:600 14px/1.25 var(--font-body)">{{ b.name }}</span><span style="font:800 13px/1 var(--font-heading);font-feature-settings:'tnum' 1">{{ b.score }}</span></div><div style="height:6px;background:var(--color-neutral-300);display:flex"><div style="{{ b.barStyle }}"></div></div></div>
+</sc-for>
+<div style="border-top:2px solid var(--color-divider);padding:16px 20px;font:400 13px/1.55 var(--font-body);color:var(--color-neutral-700)">Fünf Fragen waren falsch, vier davon zu <span style="color:var(--color-accent-700);font-weight:700">Politik in der Demokratie</span>. Diese Fragen kommen morgen zuerst.</div>
+</div>
+<div style="border-top:2px solid var(--color-divider);padding:14px 20px 46px;display:flex;gap:10px"><button class="btn btn-secondary" style="flex:none" onClick="{{ goHome }}">Start</button><button class="btn btn-primary btn-block" onClick="{{ startPractice }}">5 falsche Fragen üben</button></div>
+</div>
+</sc-if>
+
+</div>
+</x-import>
+<div style="display:flex;flex-wrap:wrap;gap:8px;max-width:402px">
+<button class="jump" onClick="{{ goLang }}">Sprache</button>
+<button class="jump" onClick="{{ goHome }}">Start</button>
+<button class="jump" onClick="{{ startPractice }}">Üben</button>
+<button class="jump" onClick="{{ startExam }}">Prüfung</button>
+<button class="jump" onClick="{{ goResults }}">Ergebnis</button>
+</div>
+</div>
+</div>
+<p class="dv-next">Try next: "add a Bundesland picker screen" · "show the 33-question exam overview grid" · "make the home screen a spaced-repetition queue instead"</p>
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const LANGS = [
+  { code: 'TR', native: 'Türkçe', de: 'Türkisch' },
+  { code: 'KO', native: '한국어', de: 'Koreanisch' },
+  { code: 'AR', native: 'العربية', de: 'Arabisch' },
+  { code: 'RU', native: 'Русский', de: 'Russisch' },
+  { code: 'UK', native: 'Українська', de: 'Ukrainisch' },
+  { code: 'EN', native: 'English', de: 'Englisch' },
+  { code: 'FA', native: 'فارسی', de: 'Persisch' },
+  { code: 'RO', native: 'Română', de: 'Rumänisch' },
+  { code: 'ES', native: 'Español', de: 'Spanisch' },
+];
+
+const QUESTIONS = [
+  {
+    de: 'Wahlen in Deutschland sind frei. Was bedeutet das?',
+    tr: { TR: "Almanya'da seçimler özgürdür. Bu ne anlama gelir?", AR: 'الانتخابات في ألمانيا حرة. ماذا يعني ذلك؟', RU: 'Выборы в Германии свободные. Что это значит?', KO: '독일의 선거는 자유롭습니다. 이것은 무슨 뜻입니까?', EN: 'Elections in Germany are free. What does that mean?' },
+    why: 'Frei heißt: niemand darf Ihnen sagen, wen Sie wählen sollen, und niemand darf Sie dafür bestrafen.',
+    correct: 2,
+    answers: [
+      { de: 'Der Wähler kann Geld dafür bekommen, wenn er wählt.', tr: { TR: 'Seçmen oy verdiği için para alabilir.', AR: 'يمكن للناخب أن يحصل على مال مقابل التصويت.', RU: 'Избиратель может получить деньги за участие в выборах.', KO: '유권자는 투표한 대가로 돈을 받을 수 있다.', EN: 'Voters can be paid for voting.' } },
+      { de: 'Nur Personen, die Steuern zahlen, dürfen wählen.', tr: { TR: 'Sadece vergi ödeyen kişiler oy verebilir.', AR: 'الأشخاص الذين يدفعون الضرائب فقط يحق لهم التصويت.', RU: 'Голосовать могут только те, кто платит налоги.', KO: '세금을 내는 사람만 투표할 수 있다.', EN: 'Only taxpayers may vote.' } },
+      { de: 'Der Wähler darf bei der Wahl weder beeinflusst noch gezwungen werden und keine Nachteile haben.', tr: { TR: 'Seçmen oy verirken ne etkilenebilir ne de zorlanabilir ve hiçbir dezavantaj yaşamaz.', AR: 'لا يجوز التأثير على الناخب أو إجباره عند التصويت، ولا يتعرض لأي أضرار.', RU: 'На избирателя нельзя влиять или принуждать его, и он не должен нести никаких последствий.', KO: '유권자는 투표 시 영향을 받거나 강요당할 수 없으며, 어떠한 불이익도 받지 않는다.', EN: 'Voters may be neither influenced nor forced, and suffer no disadvantage.' } },
+      { de: 'Alle wahlberechtigten Personen müssen wählen.', tr: { TR: 'Oy verme hakkına sahip herkes oy vermek zorundadır.', AR: 'يجب على جميع من لهم حق التصويت أن يصوّتوا.', RU: 'Все, кто имеет право голоса, обязаны голосовать.', KO: '투표권이 있는 모든 사람은 반드시 투표해야 한다.', EN: 'Everyone eligible must vote.' } },
+    ],
+  },
+  {
+    de: 'Wie heißt die Verfassung der Bundesrepublik Deutschland?',
+    tr: { TR: 'Almanya Federal Cumhuriyeti anayasasının adı nedir?', AR: 'ما هو اسم دستور جمهورية ألمانيا الاتحادية؟', RU: 'Как называется конституция ФРГ?', KO: '독일연방공화국의 헌법을 무엇이라고 부릅니까?', EN: 'What is the constitution of the Federal Republic of Germany called?' },
+    why: 'Das Grundgesetz gilt seit 1949. Artikel 1: Die Würde des Menschen ist unantastbar.',
+    correct: 1,
+    answers: [
+      { de: 'Volksgesetz', tr: { TR: 'Halk yasası', AR: 'قانون الشعب', RU: 'Народный закон', KO: '국민법', EN: 'People\u2019s law' } },
+      { de: 'Grundgesetz', tr: { TR: 'Temel Yasa (Grundgesetz)', AR: 'القانون الأساسي', RU: 'Основной закон', KO: '기본법 (Grundgesetz)', EN: 'Basic Law' } },
+      { de: 'Bundesgesetz', tr: { TR: 'Federal yasa', AR: 'القانون الفيدرالي', RU: 'Федеральный закон', KO: '연방법', EN: 'Federal law' } },
+      { de: 'Deutsches Gesetz', tr: { TR: 'Alman yasası', AR: 'القانون الألماني', RU: 'Германский закон', KO: '독일법', EN: 'German law' } },
+    ],
+  },
+  {
+    de: 'Wer wählt die Bundeskanzlerin oder den Bundeskanzler von Deutschland?',
+    tr: { TR: 'Almanya Federal Şansölyesini kim seçer?', AR: 'من ينتخب المستشار الألماني؟', RU: 'Кто избирает федерального канцлера Германии?', KO: '독일 연방총리는 누가 선출합니까?', EN: 'Who elects the German Chancellor?' },
+    why: 'Der Bundestag wählt den Kanzler. Die Bürger wählen den Bundestag — nicht den Kanzler direkt.',
+    correct: 2,
+    answers: [
+      { de: 'Das Volk in einer Direktwahl', tr: { TR: 'Halk doğrudan seçimle', AR: 'الشعب في انتخاب مباشر', RU: 'Народ прямым голосованием', KO: '국민의 직접 선거', EN: 'The people, directly' } },
+      { de: 'Die Bundesversammlung', tr: { TR: 'Federal Meclis Kurulu', AR: 'الجمعية الفيدرالية', RU: 'Федеральное собрание', KO: '연방총회', EN: 'The Federal Convention' } },
+      { de: 'Der Bundestag', tr: { TR: 'Federal Parlamento (Bundestag)', AR: 'البوندستاغ', RU: 'Бундестаг', KO: '연방의회 (Bundestag)', EN: 'The Bundestag' } },
+      { de: 'Der Bundesrat', tr: { TR: 'Federal Konsey (Bundesrat)', AR: 'البوندسرات', RU: 'Бундесрат', KO: '연방참사원 (Bundesrat)', EN: 'The Bundesrat' } },
+    ],
+  },
+];
+
+const TOPICS = [
+  { name: 'Politik in der Demokratie', count: '38 / 50' },
+  { name: 'Geschichte und Verantwortung', count: '52 / 60' },
+  { name: 'Mensch und Gesellschaft', count: '44 / 44' },
+  { name: 'Bayern — Landesfragen', count: '3 / 10' },
+];
+
+const BREAKDOWN = [
+  { name: 'Politik in der Demokratie', score: '9 / 13', pct: 69 },
+  { name: 'Geschichte und Verantwortung', score: '10 / 11', pct: 91 },
+  { name: 'Mensch und Gesellschaft', score: '6 / 6', pct: 100 },
+  { name: 'Bayern', score: '3 / 3', pct: 100 },
+];
+
+const ROW = 'padding:14px 20px 15px;border-bottom:2px solid var(--color-divider);';
+
+class Component extends DCLogic {
+  state = {
+    screen: 'lang',
+    lang: 'TR',
+    showTrans: true,
+    qi: 0,
+    picked: null,
+    mode: 'practice',
+    right: 0,
+  };
+
+  set = (o) => this.setState(o);
+
+  renderVals() {
+    const s = this.state;
+    const lang = s.lang;
+    const q = QUESTIONS[s.qi % QUESTIONS.length];
+    const answered = s.picked !== null;
+    const isExam = s.mode === 'exam';
+    const total = isExam ? 33 : 12;
+    const n = (s.qi % QUESTIONS.length) + (isExam ? 12 : 4);
+
+    const answers = q.answers.map((a, i) => {
+      const isRight = i === q.correct;
+      const isPicked = s.picked === i;
+      let bg = 'transparent', bar = '', weight = 500, ink = 'var(--color-text)', tint = 'var(--color-neutral-700)';
+      if (answered) {
+        if (isRight) { bg = 'var(--color-accent-100)'; bar = 'box-shadow:inset 4px 0 0 var(--color-accent);'; weight = 600; tint = 'var(--color-accent-800)'; }
+        else if (isPicked) { bg = 'var(--color-neutral-200)'; ink = 'var(--color-neutral-600)'; tint = 'var(--color-neutral-500)'; }
+      }
+      return {
+        letter: 'ABCD'[i],
+        de: a.de,
+        tr: (a.tr && (a.tr[lang] || a.tr.EN)) || '',
+        rowStyle: ROW + 'background:' + bg + ';' + bar,
+        letterStyle: 'font:800 14px/1.35 var(--font-heading);width:16px;flex:none;color:' + (answered && isRight ? 'var(--color-accent-700)' : ink),
+        textStyle: 'font:' + weight + ' 15px/1.35 var(--font-body);color:' + ink,
+        transStyle: 'margin:9px 0 0 28px;font:400 13.5px/1.5 var(--font-i18n);color:' + tint,
+        pick: () => { if (s.picked === null) this.set({ picked: i, right: s.right + (isRight ? 1 : 0) }); },
+      };
+    });
+
+    return {
+      isLang: s.screen === 'lang',
+      isHome: s.screen === 'home',
+      isQuiz: s.screen === 'quiz',
+      isResults: s.screen === 'results',
+      langCode: lang,
+      topics: TOPICS,
+      breakdown: BREAKDOWN.map(b => Object.assign({}, b, {
+        barStyle: 'width:' + b.pct + '%;background:' + (b.pct < 75 ? 'var(--color-accent)' : 'var(--color-neutral-800)'),
+      })),
+      languages: LANGS.map(l => ({
+        code: l.code, native: l.native, de: l.de,
+        rowStyle: 'display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 20px;border-bottom:2px solid var(--color-divider);'
+          + (l.code === lang ? 'background:var(--color-accent-100);box-shadow:inset 4px 0 0 var(--color-accent);' : ''),
+        markStyle: 'font:700 11px/1 var(--font-body);letter-spacing:.06em;padding:5px 7px;flex:none;'
+          + (l.code === lang ? 'background:var(--color-accent);color:#fff' : 'border:2px solid var(--color-divider);color:var(--color-neutral-700)'),
+        pick: () => this.set({ lang: l.code }),
+      })),
+      q: { de: q.de, tr: q.tr[lang] || q.tr.EN, why: q.why },
+      answers,
+      answered,
+      showTrans: s.showTrans,
+      transBtn: s.showTrans ? lang : 'DE',
+      counter: (isExam ? 'PRÜFUNG ' : 'ÜBEN ') + n + ' / ' + total,
+      rightMeta: isExam ? String(Math.floor(60 - n * 1.2)) + ' MIN' : s.right + ' RICHTIG',
+      progStyle: 'width:' + Math.round((n / total) * 100) + '%;background:var(--color-accent)',
+      nextLabel: answered ? 'Weiter' : 'Antwort wählen',
+      next: () => { if (answered) { if (isExam && s.qi >= 2) this.set({ screen: 'results' }); else this.set({ qi: s.qi + 1, picked: null }); } },
+      toggleTrans: () => this.set({ showTrans: !s.showTrans }),
+      goLang: () => this.set({ screen: 'lang' }),
+      goHome: () => this.set({ screen: 'home' }),
+      goResults: () => this.set({ screen: 'results' }),
+      startPractice: () => this.set({ screen: 'quiz', mode: 'practice', qi: 0, picked: null, right: 0 }),
+      startExam: () => this.set({ screen: 'quiz', mode: 'exam', qi: 0, picked: null, right: 0 }),
+    };
+  }
+}
+
+</script>
+</body>
+</html>
