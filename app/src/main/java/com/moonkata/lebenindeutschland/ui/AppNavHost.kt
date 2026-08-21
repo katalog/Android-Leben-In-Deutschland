@@ -109,7 +109,13 @@ fun AppNavHost() {
                 if (prefs.bundesland == null) {
                     navController.navigate(Routes.BUNDESLAND_ONBOARDING)
                 } else {
-                    navController.navigate(Routes.START) { popUpTo(Routes.SPRACHE) { inclusive = true } }
+                    // popUpTo(graph.id) clears the ENTIRE back stack, unlike
+                    // popUpTo(graph.startDestinationId): that id is fixed to whatever destination
+                    // the graph first started at, and popUpTo only pops up to the nearest matching
+                    // entry — so when this is reached a second time (Mehr's "change language"),
+                    // the original onboarding entries are long gone and it would only pop the
+                    // freshly-pushed Sprache entry, leaving stale Start/Mehr entries underneath.
+                    navController.navigate(Routes.START) { popUpTo(navController.graph.id) { inclusive = true } }
                 }
             })
         }

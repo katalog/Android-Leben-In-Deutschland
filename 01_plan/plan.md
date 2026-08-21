@@ -165,6 +165,12 @@
 ## 진행 로그
 > 최신 항목이 위로 오도록 기록.
 
+### 2026-08-21 (네비게이션 백스택 버그 완전 수정)
+- 이전 커밋에서 `popUpTo(navController.graph.startDestinationId)`로 고쳤다고 생각했던 "언어 재선택 시 백스택 미정리" 이슈가 실기기 재검증에서 여전히 재현됨: Start(새 언어 선택 완료 후)에서 뒤로가기 1번 눌러도 앱이 종료되지 않고 Mehr 화면으로 돌아감
+- 근본 원인: `graph.startDestinationId`는 그래프가 처음 구성될 때의 시작 목적지로 **고정**되는데, `popUpTo`는 현재 백스택에서 그 destination id와 일치하는 **가장 가까운(topmost)** 항목까지만 지움. 신규설치 온보딩(Sprache가 startDestination)의 경우, 이미 한 번 스택이 [Sprache]→[Start]로 정리된 뒤 Mehr에서 다시 Sprache로 진입하면 스택은 [Start, Mehr, Sprache(새 항목)] 상태 — 여기서 `popUpTo(graph.startDestinationId)`는 새로 푸시된 Sprache 항목 하나만 지우고 그 아래 [Start, Mehr]는 그대로 남겨 결과적으로 [Start, Mehr, Start(새로 푸시)]가 됨 (수정 전과 동일한 버그)
+- 실제 수정: `popUpTo(navController.graph.id) { inclusive = true }`로 교체 — 그래프 루트 자체를 대상으로 하면 현재 백스택 전체가 무조건 비워짐 (안드로이드 공식 문서의 "백스택 완전 초기화" 권장 패턴). `AppNavHost.kt`의 Sprache 성공 분기(Bundesland 이미 설정된 "언어 재선택" 경로)에 적용
+- 검증: `ANDROID_SERIAL=emulator-5554 ./gradlew :app:connectedDebugAndroidTest` 6개 전부 통과 확인 후, adb로 수동 재현 — 신규설치 → 한국어 → Bayern → Start → Mehr → 언어를 English로 재선택 → Start 진입 → 뒤로가기 1번 → `dumpsys activity activities`의 `topResumedActivity`가 런처로 바뀐 것 확인 (예전엔 Mehr로 돌아갔음). 완전히 해결됨
+
 ### 2026-08-21 (사용자 요청 3건: 온보딩 2단계, 다운로드 알림/실시간 진행률, 자동화 UI 테스트)
 - **온보딩에 Bundesland 단계 추가** — 원래 SpracheScreen에 있던 "SCHRITT 1 VON 2" kicker가 사실 2단계 온보딩을 암시했는데 Phase 2에서는 1단계만 구현했었음. 이제 언어 선택 후 Bundesland가 없으면 자동으로 "SCHRITT 2 VON 2" 화면으로 이동 (`BundeslandPickerScreen`에 `isOnboardingStep` 파라미터 추가). 언어는 있는데 Bundesland만 없는 기존 사용자도 다음 실행 시 이 단계로 유도됨 (`startDestination` 분기 로직에 반영)
 - **언어팩 다운로드 진행률 알림** — `PreTranslateWorker`를 포그라운드 워커로 전환, `NotificationCompat`으로 "Sprachpaket wird geladen: <언어> · N/2300" 진행바 알림 표시, 완료 시 자동으로 알림 제거. API 34+ 대응으로 매니페스트에 `FOREGROUND_SERVICE_DATA_SYNC` 권한 + `SystemForegroundService`의 `foregroundServiceType="dataSync"` 오버라이드 추가. Android 13+ `POST_NOTIFICATIONS` 런타임 권한 요청을 `MainActivity`에 추가
@@ -194,7 +200,7 @@
 - `StatistikScreen` 신규: 응시 이력(모드/날짜/점수/합격여부), 최근 시험 12회 점수 막대그래프, 일반+연방주 전체 26개 주제 정답률
 - `MehrScreen` 신규(디자인에 없던 화면): 현재 번역 언어·Bundesland 표시, 언어 재선택
 - Start/Statistik/Mehr 세 화면 모두 `Column(weight(1f).verticalScroll) + LidBottomBar` 구조로 통일, `statusBarsPadding()`으로 변경(바텀바가 자체적으로 `navigationBarsPadding()` 처리하므로 기존 `safeDrawingPadding()`은 중복이라 교체)
-- 언어 재선택 시(Mehr → Sprache) 네비게이션 백스택이 완전히 깔끔하게 정리되지 않는 사소한 known issue 있음 — 크래시나 데이터 손실은 없고 뒤로가기 동작만 살짝 어색할 수 있음
+- 언어 재선택 시(Mehr → Sprache) 네비게이션 백스택이 완전히 깔끔하게 정리되지 않는 사소한 known issue 있음 — 크래시나 데이터 손실은 없고 뒤로가기 동작만 살짝 어색할 수 있음 (→ 이후 완전히 수정됨, 아래 2026-08-21 항목 참고)
 
 ### 2026-08-21 (Phase 3, 4 완료)
 - 60분 시험 타이머 구현 (`QuizViewModel` 내 코루틴, `examStartedAtMillis` 기준 1초마다 재계산), 헤더 "N MIN" 표시, 0초 시 자동 제출
@@ -237,9 +243,8 @@
 - 저장소 생성, README/.gitignore(Android) 세팅, 디자인 zip 압축 해제, 최초 plan.md 작성
 
 ## 다음 할 일 (Next Up)
-1. **핵심 기능 5가지 + 온보딩 2단계 + 다운로드 알림/실시간 진행률 + 자동화 UI 테스트까지 전부 구현·검증 완료.** 남은 Phase 7 항목: 아이콘 세트, TalkBack 전체 감사
+1. **핵심 기능 5가지 + 온보딩 2단계 + 다운로드 알림/실시간 진행률 + 자동화 UI 테스트 + 언어 재선택 백스택 버그까지 전부 구현·검증 완료.** 남은 Phase 7 항목: 아이콘 세트, TalkBack 전체 감사
 2. Phase 8(출시 준비: 앱 아이콘, 스토어 자산, 서명, 테스트)은 아직 시작 전 — 브랜딩/스토어 문구 등 사용자 결정이 필요한 항목이 많음
 3. 알려진 제약: 시험 도중 앱 프로세스가 완전히 강제종료되면 타이머/진행상황이 복구되지 않음 (화면 회전은 문제없음)
-4. 언어 재선택 시 네비게이션 백스택이 완전히 정리되지 않는 사소한 이슈
-5. 번역 텍스트가 길 경우 레이아웃 줄바꿈/여러 줄 처리는 육안 확인만 했고 극단적으로 긴 문자열에 대한 별도 검증은 아직 안 함
-6. 자동화 테스트는 3개뿐(SpracheScreen/AnswerRow/온보딩 E2E) — FrageScreen/ErgebnisScreen/StatistikScreen 등은 아직 수동 검증에만 의존
+4. 번역 텍스트가 길 경우 레이아웃 줄바꿈/여러 줄 처리는 육안 확인만 했고 극단적으로 긴 문자열에 대한 별도 검증은 아직 안 함
+5. 자동화 테스트는 3개뿐(SpracheScreen/AnswerRow/온보딩 E2E) — FrageScreen/ErgebnisScreen/StatistikScreen 등은 아직 수동 검증에만 의존
