@@ -140,6 +140,7 @@ fun AppNavHost() {
             MehrScreen(
                 repository = repository,
                 onChangeLanguage = { navController.navigate(Routes.SPRACHE) },
+                onChangeBundesland = { navController.navigate(Routes.BUNDESLAND_PICKER) },
                 onSelectTab = ::goToTab,
             )
         }

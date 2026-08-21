@@ -41,7 +41,12 @@ import kotlinx.coroutines.launch
 private const val TOTAL_TRANSLATABLE_FIELDS = 460 * 5
 
 @Composable
-fun MehrScreen(repository: QuestionRepository, onChangeLanguage: () -> Unit, onSelectTab: (BottomTab) -> Unit) {
+fun MehrScreen(
+    repository: QuestionRepository,
+    onChangeLanguage: () -> Unit,
+    onChangeBundesland: () -> Unit,
+    onSelectTab: (BottomTab) -> Unit,
+) {
     val context = LocalContext.current
     val prefs = remember { UserPrefs(context) }
     val scope = rememberCoroutineScope()
@@ -61,7 +66,7 @@ fun MehrScreen(repository: QuestionRepository, onChangeLanguage: () -> Unit, onS
                 Rule()
 
                 InfoRow("Übersetzungssprache", language?.native ?: "—", onClick = onChangeLanguage)
-                InfoRow("Bundesland", bundesland ?: "—")
+                InfoRow("Bundesland", bundesland ?: "—", onClick = onChangeBundesland)
 
                 Text(
                     "SPRACHMODELLE",
