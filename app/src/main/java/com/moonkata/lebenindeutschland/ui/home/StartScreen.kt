@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -35,6 +35,8 @@ import com.moonkata.lebenindeutschland.data.Topics
 import com.moonkata.lebenindeutschland.data.UserPrefs
 import com.moonkata.lebenindeutschland.ui.theme.Accent
 import com.moonkata.lebenindeutschland.ui.theme.Accent700
+import com.moonkata.lebenindeutschland.ui.theme.BottomTab
+import com.moonkata.lebenindeutschland.ui.theme.LidBottomBar
 import com.moonkata.lebenindeutschland.ui.theme.LidSpace
 import com.moonkata.lebenindeutschland.ui.theme.LidType
 import com.moonkata.lebenindeutschland.ui.theme.Neutral300
@@ -49,6 +51,7 @@ fun StartScreen(
     onPickBundesland: () -> Unit,
     onStartExam: () -> Unit,
     onReviewWrong: () -> Unit,
+    onSelectTab: (BottomTab) -> Unit,
 ) {
     val context = LocalContext.current
     val prefs = remember { UserPrefs(context) }
@@ -68,8 +71,9 @@ fun StartScreen(
         wrongCount = repository.globalWrongQuestions().size
     }
 
-    Surface(modifier = Modifier.fillMaxSize().safeDrawingPadding(), color = MaterialTheme.colorScheme.background) {
-        Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+    Surface(modifier = Modifier.fillMaxSize().statusBarsPadding(), color = MaterialTheme.colorScheme.background) {
+      Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())) {
             Text("Guten Tag", style = LidType.display, modifier = Modifier.padding(LidSpace.gutter))
 
             Rule()
@@ -143,7 +147,8 @@ fun StartScreen(
                     Text("+10 FRAGEN", style = LidType.label, color = Accent700)
                 }
             }
-            Rule()
+        }
+        LidBottomBar(active = BottomTab.UEBEN, onSelect = onSelectTab)
         }
     }
 }

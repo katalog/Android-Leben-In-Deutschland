@@ -1,6 +1,9 @@
 package com.moonkata.lebenindeutschland.data
 
 class QuestionRepository(private val db: LidDatabase) {
+    fun attemptHistory() = db.attemptDao().history()
+
+
     suspend fun randomGeneral(count: Int): List<Question> = db.questionDao().randomGeneral(count)
 
     suspend fun randomBundesland(code: String, count: Int): List<Question> =

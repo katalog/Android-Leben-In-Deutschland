@@ -29,9 +29,12 @@ import com.moonkata.lebenindeutschland.data.UserPrefs
 import com.moonkata.lebenindeutschland.ui.home.BundeslandPickerScreen
 import com.moonkata.lebenindeutschland.ui.home.StartScreen
 import com.moonkata.lebenindeutschland.ui.language.SpracheScreen
+import com.moonkata.lebenindeutschland.ui.more.MehrScreen
 import com.moonkata.lebenindeutschland.ui.quiz.FrageScreen
 import com.moonkata.lebenindeutschland.ui.quiz.QuizViewModel
 import com.moonkata.lebenindeutschland.ui.result.ErgebnisScreen
+import com.moonkata.lebenindeutschland.ui.stats.StatistikScreen
+import com.moonkata.lebenindeutschland.ui.theme.BottomTab
 import kotlinx.coroutines.launch
 
 private object Routes {
@@ -40,6 +43,8 @@ private object Routes {
     const val FRAGE = "frage"
     const val ERGEBNIS = "ergebnis"
     const val BUNDESLAND_PICKER = "bundesland_picker"
+    const val STATISTIK = "statistik"
+    const val MEHR = "mehr"
 }
 
 @Composable
@@ -76,6 +81,18 @@ fun AppNavHost() {
         navController.navigate(Routes.FRAGE)
     }
 
+    fun goToTab(tab: BottomTab) {
+        when (tab) {
+            BottomTab.UEBEN -> navController.popBackStack(Routes.START, inclusive = false)
+            BottomTab.PRUEFUNG ->
+                scope.launch { startQuiz(AttemptMode.EXAM, prefs.bundesland, repository.examQuestions(prefs.bundesland)) }
+            BottomTab.FORTSCHRITT ->
+                navController.navigate(Routes.STATISTIK) { popUpTo(Routes.START); launchSingleTop = true }
+            BottomTab.MEHR ->
+                navController.navigate(Routes.MEHR) { popUpTo(Routes.START); launchSingleTop = true }
+        }
+    }
+
     val startDestination = if (prefs.selectedLanguage == null) Routes.SPRACHE else Routes.START
 
     NavHost(navController = navController, startDestination = startDestination) {
@@ -102,6 +119,7 @@ fun AppNavHost() {
                 onReviewWrong = {
                     scope.launch { startQuiz(AttemptMode.REVIEW, null, repository.globalWrongQuestions()) }
                 },
+                onSelectTab = ::goToTab,
             )
         }
 
@@ -110,6 +128,17 @@ fun AppNavHost() {
                 prefs.bundesland = code
                 navController.popBackStack()
             })
+        }
+
+        composable(Routes.STATISTIK) {
+            StatistikScreen(repository = repository, onSelectTab = ::goToTab)
+        }
+
+        composable(Routes.MEHR) {
+            MehrScreen(
+                onChangeLanguage = { navController.navigate(Routes.SPRACHE) },
+                onSelectTab = ::goToTab,
+            )
         }
 
         composable(Routes.FRAGE) {

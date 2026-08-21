@@ -133,9 +133,11 @@
 - [x] REVIEW 모드로 FrageScreen 연결 — Ergebnis 화면의 "N falsche Fragen üben"에서 방금 틀린 문제로 재연습 가능
 - [x] 홈에서 바로 진입 가능한 **전역** 오답 큐 (`QuestionRepository.globalWrongQuestions()` — 모든 시도 이력 통틀어 최신 답이 오답인 문제) — Home에 "Falsche Fragen üben" 행으로 노출, 개수도 표시. 실기기에서 앱 재시작 후에도 유지되는 것까지 확인
 
-### Phase 5 — 통계 화면
-- [ ] 응시 이력 리스트 + 점수 추이 그래프
-- [ ] 주제별 정답률 집계
+### Phase 5 — 통계 화면 ✅ 완료 (2026-08-21)
+- [x] 응시 이력 리스트(`StatistikScreen` VERLAUF) + 시험 점수 추이 막대그래프(최근 12회)
+- [x] 주제별 정답률 집계 — 일반 10개 주제 + 연방주 16개 전부, Home과 같은 로직 재사용
+- [x] **디자인 스펙에 없던 하단 탭바(ÜBEN/PRÜFUNG/FORTSCHRITT/MEHR)를 이번에 처음 구현** (`LidBottomBar`) — Start/Statistik/Mehr 세 화면에서 공용으로 사용, 4개 탭 전부 실기기에서 동작 확인
+- [x] `MehrScreen` 신규 추가(디자인에 없던 화면) — 현재 번역 언어/Bundesland 표시, 언어 재선택 진입점. Phase 6의 언어팩 관리 UI가 여기에 들어갈 자리
 
 ### Phase 6 — 온디바이스 번역
 - [ ] ML Kit Translate 연동, 언어 모델 다운로드 플로우
@@ -157,6 +159,13 @@
 
 ## 진행 로그
 > 최신 항목이 위로 오도록 기록.
+
+### 2026-08-21 (Phase 5 완료)
+- 하단 탭바(`LidBottomBar`) 신규 구현 — 원래 4화면 디자인 스펙에는 있었지만 Phase 2에서는 의도적으로 미룬 항목. ÜBEN(Start)/PRÜFUNG(시험 즉시 시작)/FORTSCHRITT(통계)/MEHR(설정) 4탭 모두 실기기 확인
+- `StatistikScreen` 신규: 응시 이력(모드/날짜/점수/합격여부), 최근 시험 12회 점수 막대그래프, 일반+연방주 전체 26개 주제 정답률
+- `MehrScreen` 신규(디자인에 없던 화면): 현재 번역 언어·Bundesland 표시, 언어 재선택
+- Start/Statistik/Mehr 세 화면 모두 `Column(weight(1f).verticalScroll) + LidBottomBar` 구조로 통일, `statusBarsPadding()`으로 변경(바텀바가 자체적으로 `navigationBarsPadding()` 처리하므로 기존 `safeDrawingPadding()`은 중복이라 교체)
+- 언어 재선택 시(Mehr → Sprache) 네비게이션 백스택이 완전히 깔끔하게 정리되지 않는 사소한 known issue 있음 — 크래시나 데이터 손실은 없고 뒤로가기 동작만 살짝 어색할 수 있음
 
 ### 2026-08-21 (Phase 3, 4 완료)
 - 60분 시험 타이머 구현 (`QuizViewModel` 내 코루틴, `examStartedAtMillis` 기준 1초마다 재계산), 헤더 "N MIN" 표시, 0초 시 자동 제출
@@ -199,7 +208,8 @@
 - 저장소 생성, README/.gitignore(Android) 세팅, 디자인 zip 압축 해제, 최초 plan.md 작성
 
 ## 다음 할 일 (Next Up)
-1. Phase 5 착수: 통계 화면 (응시 이력 리스트, 점수 추이, 주제별 정답률) — `Attempt`/`AttemptAnswer` 데이터는 이미 다 쌓이고 있어서 화면만 만들면 됨
-2. Phase 6: ML Kit Translate 연동 (아직 시작 전 — 지금까지는 독일어 전용으로만 동작)
-3. 알려진 제약: 시험 도중 앱 프로세스가 완전히 강제종료되면 타이머/진행상황이 복구되지 않음 (화면 회전 등은 문제없음). 나중에 SavedStateHandle이나 미종료 Attempt 감지로 보완 필요
-4. Bundesland는 한 번 선택하면 바꿀 UI가 없음 (재선택 진입점 추후 추가 고려)
+1. Phase 6 착수: ML Kit Translate 연동 — 지금까지는 앱이 독일어 전용으로만 동작, 번역이 이 프로젝트의 핵심 요구사항 중 하나였으므로 다음 우선순위
+2. 알려진 제약: 시험 도중 앱 프로세스가 완전히 강제종료되면 타이머/진행상황이 복구되지 않음 (화면 회전 등은 문제없음). 나중에 SavedStateHandle이나 미종료 Attempt 감지로 보완 필요
+3. Bundesland는 한 번 선택하면 바꿀 UI가 없음 (Mehr 화면에 재선택 진입점 추가 고려)
+4. 언어 재선택 시 네비게이션 백스택이 완전히 정리되지 않는 사소한 이슈 (위 로그 참고)
+5. Phase 7(다듬기), Phase 8(출시 준비)은 아직 시작 전
