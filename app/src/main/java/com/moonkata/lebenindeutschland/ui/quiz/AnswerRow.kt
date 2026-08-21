@@ -20,6 +20,7 @@ import com.moonkata.lebenindeutschland.ui.theme.Accent
 import com.moonkata.lebenindeutschland.ui.theme.Accent100
 import com.moonkata.lebenindeutschland.ui.theme.Accent700
 import com.moonkata.lebenindeutschland.ui.theme.Accent800
+import com.moonkata.lebenindeutschland.ui.theme.DirectionalContent
 import com.moonkata.lebenindeutschland.ui.theme.LidSpace
 import com.moonkata.lebenindeutschland.ui.theme.LidType
 import com.moonkata.lebenindeutschland.ui.theme.Neutral200
@@ -66,10 +67,14 @@ fun AnswerRow(letter: Char, text: String, state: AnswerRowState, translation: St
                     .background(if (state == AnswerRowState.CORRECT) Accent else Color.Transparent),
             )
             Column(modifier = Modifier.padding(vertical = 14.dp, horizontal = LidSpace.gutter)) {
-                Row {
-                    Text(letter.toString(), style = LidType.answerLetter, color = letterColor, modifier = Modifier.width(16.dp))
-                    Box(modifier = Modifier.width(12.dp))
-                    Text(text, style = textStyle, color = textColor)
+                // German letter+answer always reads left-to-right, even when the row itself is
+                // mirrored for an Arabic/Persian translation underneath (see plan.md "RTL").
+                DirectionalContent(rtl = false) {
+                    Row {
+                        Text(letter.toString(), style = LidType.answerLetter, color = letterColor, modifier = Modifier.width(16.dp))
+                        Box(modifier = Modifier.width(12.dp))
+                        Text(text, style = textStyle, color = textColor)
+                    }
                 }
                 if (translation != null) {
                     Box(modifier = Modifier.padding(top = 9.dp, start = 28.dp)) {

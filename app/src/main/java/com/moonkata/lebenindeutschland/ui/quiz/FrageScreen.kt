@@ -42,8 +42,11 @@ import com.moonkata.lebenindeutschland.data.TranslationCacheEntry
 import com.moonkata.lebenindeutschland.data.TranslationContentType
 import com.moonkata.lebenindeutschland.data.UserPrefs
 import com.moonkata.lebenindeutschland.data.translation.TranslationEngine
+import com.moonkata.lebenindeutschland.ui.theme.isRtlLanguage
 import com.moonkata.lebenindeutschland.ui.theme.Accent
 import com.moonkata.lebenindeutschland.ui.theme.Accent700
+import com.moonkata.lebenindeutschland.ui.theme.DirectionalContent
+import com.moonkata.lebenindeutschland.ui.theme.GermanText
 import com.moonkata.lebenindeutschland.ui.theme.LidButton
 import com.moonkata.lebenindeutschland.ui.theme.LidSpace
 import com.moonkata.lebenindeutschland.ui.theme.LidType
@@ -96,6 +99,7 @@ fun FrageScreen(
     }
 
     Surface(modifier = Modifier.fillMaxSize().safeDrawingPadding(), color = MaterialTheme.colorScheme.background) {
+      DirectionalContent(rtl = translationsOn && isRtlLanguage(languageCode)) {
         Column(modifier = Modifier.fillMaxSize()) {
             FrageHeader(
                 mode = viewModel.mode,
@@ -114,7 +118,7 @@ fun FrageScreen(
                         AssetImage(asset, modifier = Modifier.fillMaxWidth())
                         Spacer(modifier = Modifier.height(LidSpace.x3))
                     }
-                    Text(question.textDe, style = LidType.question)
+                    GermanText(question.textDe, style = LidType.question)
                     translations[TranslationContentType.QUESTION]?.let { translated ->
                         Row(modifier = Modifier.padding(top = LidSpace.x3).height(IntrinsicSize.Min)) {
                             Box(modifier = Modifier.width(2.dp).fillMaxHeight().background(Accent))
@@ -132,7 +136,7 @@ fun FrageScreen(
 
                 if (picked != null && question.explanationDe != null) {
                     Column(modifier = Modifier.padding(top = LidSpace.x4, start = LidSpace.gutter, end = LidSpace.gutter, bottom = LidSpace.x4)) {
-                        Text("Erklärung. " + question.explanationDe, style = LidType.explanation)
+                        GermanText("Erklärung. " + question.explanationDe, style = LidType.explanation)
                     }
                     Rule()
                 }
@@ -161,6 +165,7 @@ fun FrageScreen(
                 }
             }
         }
+      }
     }
 }
 
