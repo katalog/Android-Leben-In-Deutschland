@@ -46,7 +46,9 @@ fun StartScreen(
     repository: QuestionRepository,
     onPracticeTopic: (topicId: String) -> Unit,
     onPracticeBundesland: (code: String) -> Unit,
+    onPickBundesland: () -> Unit,
     onStartExam: () -> Unit,
+    onReviewWrong: () -> Unit,
 ) {
     val context = LocalContext.current
     val prefs = remember { UserPrefs(context) }
@@ -55,6 +57,7 @@ fun StartScreen(
     var overallCorrect by remember { mutableIntStateOf(0) }
     var overallTotal by remember { mutableIntStateOf(1) }
     var topicProgress by remember { mutableStateOf<Map<String, Pair<Int, Int>>>(emptyMap()) }
+    var wrongCount by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(Unit) {
         overallTotal = repository.overallTotal()
@@ -62,6 +65,7 @@ fun StartScreen(
         topicProgress = Topics.generalNames.keys.associateWith { topicId ->
             repository.topicCorrect(topicId) to repository.topicTotal(topicId)
         }
+        wrongCount = repository.globalWrongQuestions().size
     }
 
     Surface(modifier = Modifier.fillMaxSize().safeDrawingPadding(), color = MaterialTheme.colorScheme.background) {
@@ -106,22 +110,36 @@ fun StartScreen(
                 TopicRow(name, correct, total) { onPracticeTopic(topicId) }
             }
 
-            if (bundesland != null) {
+            if (wrongCount > 0) {
                 Rule()
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onPracticeBundesland(bundesland) }
-                        .padding(vertical = LidSpace.x3, horizontal = LidSpace.gutter),
+                        .clickable(onClick = onReviewWrong)
+                        .padding(vertical = 14.dp, horizontal = LidSpace.gutter),
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
-                    Column {
-                        Text("BUNDESLAND", style = LidType.label, color = Neutral600)
-                        Text(
-                            Topics.bundeslandNames[bundesland] ?: bundesland,
-                            style = LidType.display.copy(fontSize = 20.sp, lineHeight = 22.sp),
-                        )
-                    }
+                    Text("Falsche Fragen üben", style = LidType.rowTitle)
+                    Text("$wrongCount", style = LidType.rowTitle, color = Accent700)
+                }
+            }
+
+            Rule()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { if (bundesland != null) onPracticeBundesland(bundesland) else onPickBundesland() }
+                    .padding(vertical = LidSpace.x3, horizontal = LidSpace.gutter),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Column {
+                    Text("BUNDESLAND", style = LidType.label, color = Neutral600)
+                    Text(
+                        bundesland?.let { Topics.bundeslandNames[it] } ?: "auswählen",
+                        style = LidType.display.copy(fontSize = 20.sp, lineHeight = 22.sp),
+                    )
+                }
+                if (bundesland != null) {
                     Text("+10 FRAGEN", style = LidType.label, color = Accent700)
                 }
             }

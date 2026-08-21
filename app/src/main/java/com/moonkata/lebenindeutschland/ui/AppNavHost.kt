@@ -26,6 +26,7 @@ import com.moonkata.lebenindeutschland.data.LidDatabase
 import com.moonkata.lebenindeutschland.data.Question
 import com.moonkata.lebenindeutschland.data.QuestionRepository
 import com.moonkata.lebenindeutschland.data.UserPrefs
+import com.moonkata.lebenindeutschland.ui.home.BundeslandPickerScreen
 import com.moonkata.lebenindeutschland.ui.home.StartScreen
 import com.moonkata.lebenindeutschland.ui.language.SpracheScreen
 import com.moonkata.lebenindeutschland.ui.quiz.FrageScreen
@@ -38,6 +39,7 @@ private object Routes {
     const val START = "start"
     const val FRAGE = "frage"
     const val ERGEBNIS = "ergebnis"
+    const val BUNDESLAND_PICKER = "bundesland_picker"
 }
 
 @Composable
@@ -93,10 +95,21 @@ fun AppNavHost() {
                 onPracticeBundesland = { code ->
                     scope.launch { startQuiz(AttemptMode.PRACTICE, code, repository.randomBundesland(code, 10)) }
                 },
+                onPickBundesland = { navController.navigate(Routes.BUNDESLAND_PICKER) },
                 onStartExam = {
                     scope.launch { startQuiz(AttemptMode.EXAM, prefs.bundesland, repository.examQuestions(prefs.bundesland)) }
                 },
+                onReviewWrong = {
+                    scope.launch { startQuiz(AttemptMode.REVIEW, null, repository.globalWrongQuestions()) }
+                },
             )
+        }
+
+        composable(Routes.BUNDESLAND_PICKER) {
+            BundeslandPickerScreen(onChosen = { code ->
+                prefs.bundesland = code
+                navController.popBackStack()
+            })
         }
 
         composable(Routes.FRAGE) {

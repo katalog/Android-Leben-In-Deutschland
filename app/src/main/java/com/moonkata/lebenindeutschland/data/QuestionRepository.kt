@@ -26,6 +26,20 @@ class QuestionRepository(private val db: LidDatabase) {
 
     suspend fun overallCorrect(): Int = db.attemptAnswerDao().correctDistinctQuestionCount()
 
+    /**
+     * Questions whose most recent answer (across every practice/exam/review attempt ever) was
+     * wrong — the persistent wrong-answer queue, as opposed to Ergebnis's session-only list.
+     * Reduced in Kotlin, same reasoning as AttemptAnswerDao.allOrderedByTime.
+     */
+    suspend fun globalWrongQuestions(): List<Question> {
+        val latestByQuestion = LinkedHashMap<Int, Boolean>()
+        db.attemptAnswerDao().allOrderedByTime().forEach { answer ->
+            latestByQuestion[answer.questionId] = answer.isCorrect
+        }
+        val wrongIds = latestByQuestion.filterValues { !it }.keys.toList()
+        return db.questionDao().getByIds(wrongIds)
+    }
+
     suspend fun startAttempt(mode: AttemptMode, bundesland: String?, totalQuestions: Int): Attempt {
         val attempt = Attempt(
             mode = mode,

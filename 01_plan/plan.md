@@ -123,14 +123,15 @@
 - `enableEdgeToEdge()` 사용 시 `safeDrawingPadding()`을 안 주면 헤더가 상태바에 가려짐
 - Room `Callback.onCreate`의 비동기 prepopulate와 화면의 첫 조회 사이에 레이스 컨디션 발생(설치 직후 "0/0" 표시) → `ensureSeeded()` suspend 함수 + Mutex로 교체, 실제 콘텐츠 렌더링 전 확실히 대기하도록 변경
 
-### Phase 3 — 모의고사 엔진 (거의 완료, 타이머만 남음)
+### Phase 3 — 모의고사 엔진 ✅ 완료 (2026-08-21)
 - [x] 33문제(30+3) 랜덤 추출 로직 (`QuestionRepository.examQuestions`) — Home의 "Prüfung simulieren" 포스터에 연결됨
-- [ ] 60분 카운트다운 타이머 (프로세스 종료 대응) — 남은 작업
-- [x] 채점 및 `Attempt`/`AttemptAnswer` 저장, 17개 기준 합격/불합격 판정(`QuizViewModel.passed`)까지 구현·검증됨 (Ergebnis에 BESTANDEN/NICHT BESTANDEN 표시 준비됨, 시험 모드로 실행하면 바로 동작)
+- [x] 60분 카운트다운 타이머 — `QuizViewModel`에서 생성 시점(`examStartedAtMillis`) 기준으로 1초마다 재계산, 헤더에 "N MIN" 표시, 0되면 자동 제출. 회전 등 설정 변경에는 살아남음(ViewModel 특성). **다만 프로세스가 통째로 죽었다가 복귀하는 경우(진짜 강제종료)는 아직 복구 안 됨** — SavedStateHandle이나 DB 기반 재개 로직이 필요, 지금은 알려진 제약사항으로 남겨둠
+- [x] 채점 및 `Attempt`/`AttemptAnswer` 저장, 17개 기준 합격/불합격 판정(`QuizViewModel.passed`)까지 구현·검증됨
+- [x] 에뮬레이터 실측: Bundesland(Bayern) 선택 후 시험 시작 → "PRÜFUNG 1/33" + "59 MIN"(타이머 감소 확인) 정상 동작
 
-### Phase 4 — 오답 재연습 (세션 단위는 완료, 전역 큐는 남음)
-- [x] REVIEW 모드로 FrageScreen 연결 — Ergebnis 화면의 "N falsche Fragen üben"에서 방금 틀린 문제로 재연습 가능, 실기기 검증 완료
-- [ ] 홈에서 바로 진입 가능한 **전역** 오답 큐(모든 시도 이력 통틀어 최신 답이 오답인 문제) — 지금은 세션(방금 끝난 회차)에 한정됨. `AttemptAnswerDao.allOrderedByTime()`은 이미 있으니 Kotlin에서 questionId별 최신 답만 남기는 reduce만 추가하면 됨
+### Phase 4 — 오답 재연습 ✅ 완료 (2026-08-21)
+- [x] REVIEW 모드로 FrageScreen 연결 — Ergebnis 화면의 "N falsche Fragen üben"에서 방금 틀린 문제로 재연습 가능
+- [x] 홈에서 바로 진입 가능한 **전역** 오답 큐 (`QuestionRepository.globalWrongQuestions()` — 모든 시도 이력 통틀어 최신 답이 오답인 문제) — Home에 "Falsche Fragen üben" 행으로 노출, 개수도 표시. 실기기에서 앱 재시작 후에도 유지되는 것까지 확인
 
 ### Phase 5 — 통계 화면
 - [ ] 응시 이력 리스트 + 점수 추이 그래프
@@ -156,6 +157,13 @@
 
 ## 진행 로그
 > 최신 항목이 위로 오도록 기록.
+
+### 2026-08-21 (Phase 3, 4 완료)
+- 60분 시험 타이머 구현 (`QuizViewModel` 내 코루틴, `examStartedAtMillis` 기준 1초마다 재계산), 헤더 "N MIN" 표시, 0초 시 자동 제출
+- 전역 오답 큐 구현 (`QuestionRepository.globalWrongQuestions()`), Home에 개수와 함께 노출
+- 디자인 번들에 없던 **Bundesland 선택 화면**(`BundeslandPickerScreen`)을 새로 만듦 — 16개 주 단순 목록, 탭하면 즉시 저장 후 뒤로. 이게 있어야 시험의 30+3 구성과 주(州)별 연습이 실제로 동작함
+- Home의 BUNDESLAND 블록을 "미선택 시 선택 화면으로, 선택 시 연습 시작"으로 분기하도록 수정
+- 에뮬레이터 실측: Bundesland 선택 → 시험 시작 → "PRÜFUNG 1/33" + "59 MIN"(타이머 감소) 확인, 전역 오답 큐가 앱 재시작 후에도 유지되는 것 확인
 
 ### 2026-08-21 (Phase 2 완료 + Phase 3/4 상당 부분)
 - 4개 화면(Sprache/Start/Frage/Ergebnis) 전부 구현, 실제 NavHost로 연결, 임시 테스트 하네스 제거
@@ -191,7 +199,7 @@
 - 저장소 생성, README/.gitignore(Android) 세팅, 디자인 zip 압축 해제, 최초 plan.md 작성
 
 ## 다음 할 일 (Next Up)
-1. Phase 3 마무리: 60분 시험 타이머 (프로세스 종료/화면 회전에도 남은 시간 유지 — `startedAt` 기준 재계산 방식으로 구현 권장), 헤더의 exam 모드 trailing meta("44 MIN")에 연결
-2. Phase 4 마무리: 홈에서 진입 가능한 전역 오답 큐 화면 (전체 이력에서 최신 답이 오답인 문제 모음)
-3. Bundesland 선택 UI가 아직 없음(디자인 스펙에도 없던 화면) — Home의 Bundesland 블록과 시험의 3문제 구성을 실제로 쓰려면 간단한 선택 화면이나 설정 진입점이 필요
-4. Phase 5(통계 화면), Phase 6(ML Kit 번역)은 아직 시작 전
+1. Phase 5 착수: 통계 화면 (응시 이력 리스트, 점수 추이, 주제별 정답률) — `Attempt`/`AttemptAnswer` 데이터는 이미 다 쌓이고 있어서 화면만 만들면 됨
+2. Phase 6: ML Kit Translate 연동 (아직 시작 전 — 지금까지는 독일어 전용으로만 동작)
+3. 알려진 제약: 시험 도중 앱 프로세스가 완전히 강제종료되면 타이머/진행상황이 복구되지 않음 (화면 회전 등은 문제없음). 나중에 SavedStateHandle이나 미종료 Attempt 감지로 보완 필요
+4. Bundesland는 한 번 선택하면 바꿀 UI가 없음 (재선택 진입점 추후 추가 고려)

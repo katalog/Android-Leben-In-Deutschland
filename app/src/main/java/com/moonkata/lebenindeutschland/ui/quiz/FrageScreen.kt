@@ -51,6 +51,7 @@ fun FrageScreen(viewModel: QuizViewModel, onExit: () -> Unit, onFinished: (QuizV
                 position = viewModel.currentIndex + 1,
                 total = viewModel.total,
                 correctCount = viewModel.correctCount,
+                examSecondsRemaining = viewModel.examSecondsRemaining,
                 onCancel = onExit,
             )
             QuizProgressBar(fraction = (viewModel.currentIndex + 1) / viewModel.total.toFloat())
@@ -102,7 +103,14 @@ private fun rowState(picked: Int?, index: Int, correctIndex: Int): AnswerRowStat
 }
 
 @Composable
-private fun FrageHeader(mode: AttemptMode, position: Int, total: Int, correctCount: Int, onCancel: () -> Unit) {
+private fun FrageHeader(
+    mode: AttemptMode,
+    position: Int,
+    total: Int,
+    correctCount: Int,
+    examSecondsRemaining: Int,
+    onCancel: () -> Unit,
+) {
     val modeLabel = if (mode == AttemptMode.EXAM) "PRÜFUNG" else "ÜBEN"
     Box(modifier = Modifier.fillMaxWidth().padding(top = 12.dp, start = LidSpace.gutter, end = LidSpace.gutter, bottom = 10.dp)) {
         Text(
@@ -111,8 +119,14 @@ private fun FrageHeader(mode: AttemptMode, position: Int, total: Int, correctCou
             modifier = Modifier.align(Alignment.CenterStart).clickable(onClick = onCancel),
         )
         Text("$modeLabel $position / $total", style = LidType.label, modifier = Modifier.align(Alignment.Center))
-        if (mode == AttemptMode.PRACTICE) {
-            Text("$correctCount RICHTIG", style = LidType.label, color = Accent700, modifier = Modifier.align(Alignment.CenterEnd))
+        when (mode) {
+            AttemptMode.PRACTICE ->
+                Text("$correctCount RICHTIG", style = LidType.label, color = Accent700, modifier = Modifier.align(Alignment.CenterEnd))
+            AttemptMode.EXAM -> {
+                val minutes = examSecondsRemaining / 60
+                Text("$minutes MIN", style = LidType.label, color = Accent700, modifier = Modifier.align(Alignment.CenterEnd))
+            }
+            AttemptMode.REVIEW -> Unit
         }
     }
 }
